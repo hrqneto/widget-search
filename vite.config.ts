@@ -4,14 +4,14 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   define: {
-    'process.env': {}
+    'process.env': {},
   },
   build: {
     lib: {
-      entry: './src/main.tsx',
+      entry: './src/widget.tsx',
       name: 'BuscaFlexWidget',
       fileName: 'embed',
-      formats: ['iife']
+      formats: ['iife'],
     },
   },
 });
