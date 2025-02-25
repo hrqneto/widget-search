@@ -8,7 +8,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: 'src/main.tsx',
+      entry: '.src/main.tsx',
       name: 'BuscaFlexWidget',
       formats: ['iife'],
       fileName: 'embed'
