@@ -3,12 +3,24 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env': {},
+  },
   build: {
     lib: {
       entry: 'src/main.tsx',
       name: 'BuscaFlexWidget',
-      fileName: () => 'embed.js',
       formats: ['iife'],
+      fileName: 'embed'
     },
-  },
+    rollupOptions: {
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM'
+        }
+      }
+    }
+  }
 });
