@@ -4,8 +4,8 @@ const BuscaFlexWidget = () => {
   const [query, setQuery] = useState('');
 
   const handleSearch = () => {
-    window.open(`https://buscaflex.com/search?q=${query}`, '_blank');
-  };
+    window.open(`https://buscaflex-backend-production.up.railway.app/search?q=${query}`,);
+  };  
 
   return (
     <div className="relative w-full">
