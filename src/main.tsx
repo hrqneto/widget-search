@@ -2,16 +2,19 @@ import { createRoot } from 'react-dom/client';
 import BuscaFlexWidget from './components/BuscaFlexWidget';
 import './index.css';
 
-// Função que substitui o campo de busca original pelo da BuscaFlex
+// Função mais robusta para substituir o campo de busca original
 function replaceSearchField() {
-  const originalSearch = document.querySelector('input[type="search"], input[type="text"][name="q"]');
+  const interval = setInterval(() => {
+    const originalSearch = document.querySelector('input[type="search"], input[type="text"][name="q"]');
 
-  if (originalSearch && originalSearch.parentNode) {
-    const wrapper = document.createElement('div');
-    originalSearch.parentNode.replaceChild(wrapper, originalSearch);
-    const root = createRoot(wrapper);
-    root.render(<BuscaFlexWidget />);
-  }
+    if (originalSearch && originalSearch.parentNode) {
+      clearInterval(interval); // Para o intervalo quando encontrar o elemento
+      const wrapper = document.createElement('div');
+      originalSearch.parentNode.replaceChild(wrapper, originalSearch);
+      const root = createRoot(wrapper);
+      root.render(<BuscaFlexWidget />);
+    }
+  }, 100); // Tenta a cada 100ms até encontrar o campo
 }
 
 // Inicializa quando o documento estiver pronto
