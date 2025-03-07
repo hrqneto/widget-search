@@ -1,10 +1,12 @@
-// vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
 
 export default defineConfig({
-  plugins: [react(), cssInjectedByJsPlugin()],
+  plugins: [
+    react(),
+    cssInjectedByJsPlugin(),
+  ],
   define: {
     'process.env': {},
   },
@@ -14,11 +16,6 @@ export default defineConfig({
       name: 'BuscaFlexWidget',
       fileName: () => 'embed.iife.js',
       formats: ['iife'],
-    },
-    rollupOptions: {
-      output: {
-        assetFileNames: `assets/[name].[hash].[ext]`,
-      },
     },
   },
 });

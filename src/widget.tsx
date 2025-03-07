@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import BuscaFlexWidget from './components/BuscaFlexWidget';
-import './index.css';
+// widget.tsx
+import './output.css';
 
 // Função mais robusta para substituir o campo de busca original
 function replaceSearchField() {
