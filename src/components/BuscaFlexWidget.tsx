@@ -108,7 +108,7 @@ const BuscaFlexWidget = () => {
       <input
         type="text"
         className="w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-400"
-        placeholder="O que você procura?"
+        placeholder="O que você procura queride?"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setIsOpen(true)}
