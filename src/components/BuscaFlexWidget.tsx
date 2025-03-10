@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
 
-// Definição do tipo para os resultados
+//TODO --> organizar tipos e estrutura de estado refatorar
 interface Produto {
   id: string;
   nome: string;
@@ -18,6 +18,13 @@ interface SearchResults {
   recomendados?: Produto[];
 }
 
+// Definição da interface de configurações do Firestore
+interface WidgetConfig {
+  backgroundColor: string;
+  placeholder: string;
+}
+
+
 const API_BASE_URL = `http://localhost:8085/api`;
 
 const BuscaFlexWidget = () => {
@@ -25,6 +32,32 @@ const BuscaFlexWidget = () => {
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  
+    // Estado para armazenar configurações do Firestore
+    const [config, setConfig] = useState<WidgetConfig>({
+      backgroundColor: "#ffffff", // Valor padrão
+      placeholder: "O que você procura queride?", // Valor padrão
+    });
+  
+    // Função para buscar configurações da loja no Firestore
+    useEffect(() => {
+      const fetchConfig = async () => {
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/configs/loja123?t=${Date.now()}`
+          ); // 🔥 Cache-Buster na URL
+          if (!response.ok) throw new Error("Erro ao carregar configurações");
+    
+          const data: WidgetConfig = await response.json();
+          setConfig(data);
+        } catch (error) {
+          console.error("Erro ao carregar configurações do widget:", error);
+        }
+      };
+    
+      fetchConfig();
+    }, []);    
+    
 
   // Função para buscar produtos na API com debounce para evitar múltiplas chamadas
   const fetchResults = async (searchQuery: string) => {
@@ -105,17 +138,20 @@ const BuscaFlexWidget = () => {
 
   return (
     <div className="relative w-full max-w-2xl mx-auto mt-4">
-      <input
+   <input
         type="text"
         className="w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-400"
-        placeholder="O que você procura queride?"
+        placeholder={config.placeholder} // 🔥 Usando o placeholder da API
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setIsOpen(true)}
+        style={{ backgroundColor: config.backgroundColor }} // 🔥 Aplicando a cor de fundo da API
       />
   
       {isOpen && results && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white">
+        <div className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white"
+        style={{ backgroundColor: config.backgroundColor }} // 🔥 Aplicando a cor de fundo também na dropdown
+        >
           <button
             className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
             onClick={() => setIsOpen(false)}
