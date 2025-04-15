@@ -1,282 +1,426 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import debounce from "lodash.debounce";
 
-//TODO --> organizar tipos e estrutura de estado refatorar
+// ✅ Definição das interfaces
 interface Produto {
   id: string;
-  nome: string;
-  preco: number;
-  categoria: string;
-  marca: string;
-  estoque: number;
-  imagem: string;
-  relevancia: number;
+  title: string;
+  price: number;
+  category: string;
+  brand: string;
+  image?: string;
+  url?: string;
 }
 
 interface SearchResults {
-  resultados?: Produto[];
-  recomendados?: Produto[];
+  resultados: Produto[];
 }
 
-// Definição da interface de configurações do Firestore
 interface WidgetConfig {
   backgroundColor: string;
   placeholder: string;
 }
 
+// ✅ Definição de constantes para evitar "hardcoded strings"
+const API_BASE_URL = "http://localhost:8085/api";
+const DEFAULT_CONFIG: WidgetConfig = {
+  backgroundColor: "#ffffff",
+  placeholder: "O que você procura?",
+};
 
-const API_BASE_URL = `http://localhost:8085/api`;
+// 🔪 Função para truncar texto muito longo
+const truncate = (text: string, maxLength: number = 50): string => {
+  return text.length > maxLength ? text.slice(0, maxLength - 3).trim() + "..." : text;
+};
 
 const BuscaFlexWidget = () => {
   const [query, setQuery] = useState("");
+  const [lastSentQuery, setLastSentQuery] = useState("");
   const [results, setResults] = useState<SearchResults | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
-    // Estado para armazenar configurações do Firestore
-    const [config, setConfig] = useState<WidgetConfig>({
-      backgroundColor: "#ffffff", // Valor padrão
-      placeholder: "O que você procura queride?", // Valor padrão
-    });
-  
-    // Função para buscar configurações da loja no Firestore
-    useEffect(() => {
-      const fetchConfig = async () => {
-        try {
-          const response = await fetch(
-            `${API_BASE_URL}/configs/loja123?t=${Date.now()}`
-          ); // 🔥 Cache-Buster na URL
-          if (!response.ok) throw new Error("Erro ao carregar configurações");
-    
-          const data: WidgetConfig = await response.json();
-          setConfig(data);
-        } catch (error) {
-          console.error("Erro ao carregar configurações do widget:", error);
-        }
-      };
-    
-      fetchConfig();
-    }, []);    
-    
+  const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
 
-  // Função para buscar produtos na API com debounce para evitar múltiplas chamadas
-  const fetchResults = async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      setResults(null);
-      return;
-    }
+  // TODO - organizar modulo - Busca configurações da loja no Firestore
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/configs/loja123?t=${Date.now()}`
+        );
+        if (!response.ok) throw new Error("Erro ao carregar configurações");
 
+        const data: WidgetConfig = await response.json();
+        setConfig(data);
+      } catch (error) {
+        console.error("Erro ao carregar configurações:", error);
+      }
+    };
+
+    fetchConfig();
+  }, []);
+
+  // TODO - chamada do microservico(python) - autocomplete search
+  const fetchAutocompleteResults = async (value: string) => {
     setIsLoading(true);
-
+  
+    const getTopItems = (
+      produtos: Produto[],
+      key: "category" | "brand",
+      limit: number
+    ): string[] => {
+      const countMap = produtos.reduce<Record<string, number>>((acc, produto) => {
+        const val = produto[key];
+        if (val) {
+          acc[val] = (acc[val] || 0) + 1;
+        }
+        return acc;
+      }, {});
+  
+      return Object.entries(countMap)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([item]) => item);
+    };
+  
     try {
-      const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(searchQuery)}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await fetch(
+        `${API_BASE_URL}/autocomplete/search?q=${encodeURIComponent(value)}`
+      );
+  
       if (!response.ok) {
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
-
-      const data: SearchResults = await response.json();
-      setResults(data);
-    } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
-      setResults(null);
+  
+      const data = await response.json();
+      console.log("📦 Dados autocomplete:", data);
+      const produtos: Produto[] = data.products || [];
+  
+      setTopQueries(data.queries?.map((q: any) => q.query) || []);
+      setTopCategories(
+        data.catalogues?.map((c: any) => c.name) || getTopItems(produtos, "category", 5)
+      );
+      setTopBrands(
+        data.brands?.map((b: any) => b.name) || getTopItems(produtos, "brand", 5)
+      );
+      setResults({
+        resultados: produtos,
+      });
+    } catch (err) {
+      console.error("Erro ao buscar autocomplete:", err);
+      setResults({ resultados: [] });
     } finally {
       setIsLoading(false);
     }
   };
-
-  const debouncedFetchResults = useCallback(debounce(fetchResults, 500), []);
-
+  
+  //TODO organizar modulos - chamada do servico de sugestoes iniciais
   useEffect(() => {
-    if (query.length > 1) {
-      debouncedFetchResults(query);
+    if (query.trim().length < 1) {
       setIsOpen(true);
-    } else {
-      setResults(null);
-      setIsOpen(false);
+      fetch(`${API_BASE_URL}/autocomplete/suggestions`)
+        .then((res) => res.json())
+        .then((data) => {
+          setTopQueries(data.topQueries.map((q: any) => q.query));
+          setTopCategories(data.topCategories.map((c: any) => c.name));
+          setTopBrands(data.topBrands.map((b: any) => b.name));
+          setResults({
+            resultados: data.topProducts || [],
+          });
+        })
+        .catch((err) =>
+          console.error("Erro ao buscar sugestões iniciais:", err)
+        );
     }
-  }, [query, debouncedFetchResults]);
-
-  // 🏷️ Função para encontrar as 3 categorias mais buscadas
-  const getTopCategories = () => {
-    if (!results?.resultados) return [];
-
-    // Contador de categorias
-    const categoryCount: Record<string, number> = {};
-    results.resultados.forEach((produto) => {
-      categoryCount[produto.categoria] = (categoryCount[produto.categoria] || 0) + 1;
-    });
-
-    // Ordena as categorias por número de ocorrências e pega as 6 mais populares
-    return Object.entries(categoryCount)
-      .sort((a, b) => b[1] - a[1]) // Ordena da mais frequente para a menos frequente
-      .slice(0, 6) // Pega só as 6 primeiras
-      .map(([categoria]) => categoria);
-  };
-
-  const getTopBrands = () => {
-    if (!results?.resultados) return [];
+  }, [query]);  
   
-    const brandCount: Record<string, number> = {};
-    results.resultados.forEach((produto) => {
-      if (produto.marca) {
-        brandCount[produto.marca] = (brandCount[produto.marca] || 0) + 1;
-      }
-    });
+  const debouncedFetchAutocomplete = useMemo(
+    () => debounce(fetchAutocompleteResults, 300),
+    []
+  );
+
+  const [topQueries, setTopQueries] = useState<string[]>([]);
+  const [topCategories, setTopCategories] = useState<string[]>([]);
+  const [topBrands, setTopBrands] = useState<string[]>([]);
+
+  // ✅ Função para destacar o termo buscado dinamicamente
+  const highlightQuery = (text: string) => {
+    if (!query) return text;
+    
+    const escapedQuery = query.replace(/[-[\]/{}()*+?.\\^$|]/g, '\\$&'); // Escape Regex
+    const parts = escapedQuery.split(/\s+/).filter(Boolean); // Divide por espaços
   
-    return Object.entries(brandCount)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([marca]) => marca);
-  };
+    const regex = new RegExp(`(${parts.join("|")})`, "gi");
   
+    const splitParts = text.split(regex);
+  
+    return splitParts.map((part, i) =>
+      regex.test(part)
+        ? <mark key={i} className="bg-yellow-200 rounded px-1">{part}</mark>
+        : <span key={i}>{part}</span>
+    );
+  };  
 
   return (
     <div className="relative w-full max-w-2xl mx-auto mt-4">
-   <input
+      <input
         type="text"
+        autoComplete="off"
         className="w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-400"
-        placeholder={config.placeholder} // 🔥 Usando o placeholder da API
+        placeholder={config.placeholder}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => setIsOpen(true)}
-        style={{ backgroundColor: config.backgroundColor }} // 🔥 Aplicando a cor de fundo da API
+        onChange={(e) => {
+          const value = e.target.value;
+          setQuery(value);
+          setIsOpen(true);
+
+          if (value.length >= 1) {
+            debouncedFetchAutocomplete(value);
+          } else {
+            // 👇 Se limpar o campo, volta para sugestões iniciais
+            fetch(`${API_BASE_URL}/autocomplete/suggestions`)
+              .then((res) => res.json())
+              .then((data) => {
+                setTopQueries(data.topQueries.map((q: any) => q.query));
+                setTopCategories(data.topCategories.map((c: any) => c.name));
+                setTopBrands(data.topBrands.map((b: any) => b.name));
+                setResults({
+                  resultados: data.topProducts || [],
+                });
+              })
+              .catch((err) => {
+                console.error("Erro ao buscar sugestões iniciais:", err);
+                setResults({ resultados: [] });
+              });
+          }
+        }}
+        onFocus={() => {
+          setIsOpen(true);
+
+          if (query.length >= 1) {
+            if (!results) {
+              fetchAutocompleteResults(query);
+            }
+          } else {
+            fetch(`${API_BASE_URL}/autocomplete/suggestions`)
+              .then((res) => res.json())
+              .then((data) => {
+                setTopQueries(data.topQueries.map((q: any) => q.query));
+                setTopCategories(data.topCategories.map((c: any) => c.name));
+                setTopBrands(data.topBrands.map((b: any) => b.name));
+                setResults({
+                  resultados: data.topProducts || [],
+                });
+              })
+              .catch((err) =>
+                console.error("Erro ao buscar sugestões iniciais:", err)
+              );
+          }
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            if (!document.activeElement?.closest(".autocomplete-dropdown")) {
+              setIsOpen(false);
+            }
+          }, 100);
+        }}
+        style={{ backgroundColor: config.backgroundColor }}
       />
-  
-      {isOpen && results && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white"
-        style={{ backgroundColor: config.backgroundColor }} // 🔥 Aplicando a cor de fundo também na dropdown
-        >
-          <button
-            className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
-            onClick={() => setIsOpen(false)}
+
+
+      {isOpen &&
+        (topQueries.length > 0 ||
+          topCategories.length > 0 ||
+          topBrands.length > 0 ||
+          results) && (
+            //abertura do dropdown de busca
+          <div
+            className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
+            style={{ backgroundColor: config.backgroundColor }}
           >
-            ✕
-          </button>
-  
-          {isLoading ? (
-            <p className="text-center text-gray-500">Carregando resultados...</p>
-          ) : (
-            <div className="grid grid-cols-[1.8fr_1.5fr_3fr] gap-4 h-full">
-              
-              {/* Coluna 1 - Categorias */}
-              <div className="p-4 rounded-lg">
+            
+            {/* Ribbon vermelha */}
+            <div className="h-1 bg-red-500 rounded-t-md absolute top-0 left-0 w-full" />
+            {/* Caret apontando para o input */}
+            <div className="w-2 h-2 bg-red-500 absolute -top-1.5 left-1/2 transform -translate-x-1/2 -rotate-45 z-50" />
+                      
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
+              onClick={() => setIsOpen(false)}
+            >
+              ✕
+            </button>
 
-              <h3 className="font-bold text-gray-700 mb-2">Top Queries</h3>
-              <div className="flex gap-2 flex-wrap mb-4">
-                {results?.resultados && results.resultados.length > 0 ? (
-                  // Aqui você pode ajustar com as queries reais da API quando tiver
-                  ["Kalimba", "Guitar", "Ukulele"].map((query, index) => (
-                    <span
-                      key={index}
-                      className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium"
-                    >
-                      {query}
-                    </span>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-400">Nenhuma pesquisa encontrada</p>
-                )}
-              </div>
-
-              <h3 className="font-bold text-gray-700 mb-2">Top Categories</h3>
-              <ul className="space-y-1 mb-4">
-                {getTopCategories().length > 0 ? (
-                  getTopCategories().map((categoria, index) => (
-                    <li key={index} className="text-sm text-gray-600">
-                      {categoria}
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-400">Nenhuma categoria encontrada</p>
-                )}
-              </ul>
-
-              <h3 className="font-bold text-gray-700 mb-2">Top Brands</h3>
-              <ul className="space-y-1">
-                {getTopBrands().length > 0 ? (
-                  getTopBrands().map((brand, index) => (
-                    <li key={index} className="text-sm text-gray-600">
-                      {brand}
-                    </li>
-                  ))
-                ) : (
-                  <p className="text-sm text-gray-400">Nenhuma marca disponível</p>
-                )}
-              </ul>
-              </div>
-  
-              {/* Coluna 2 - Produto em Destaque */}
-              <div className="p-4 border-l">
-                {results.resultados && results.resultados.length > 0 ? (
-                    <div className="text-center flex flex-col items-center justify-center">
-                      <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
-                      <img
-                        src={results.resultados[0].imagem}
-                        alt={results.resultados[0].nome}
-                        className="w-32 h-32 mx-auto rounded-lg object-cover"
-                      />
-                      <h4 className="font-semibold text-lg mt-2 text-gray-900">
-                        {results.resultados[0].nome}
-                      </h4>
-                      <p className="text-green-500 font-bold text-lg">
-                        R$ {results.resultados[0].preco.toFixed(2)}
-                      </p>
+            {isLoading ? (
+              <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
+            ) : results?.resultados?.length > 0 ? (
+              // ✅ BLOCO PRINCIPAL COM OS 3 PAINÉIS
+              <div className="grid grid-cols-[1.2fr_1.5fr_4fr] gap-4 h-full">
+                {/* Coluna 1 - buscas - categorias - marcas */}
+                <div className="p-4 rounded-lg">
+                    {/* Top Queries */}
+                    <h3 className="font-bold text-gray-700 mb-2">Top Queries</h3>
+                    <div className="flex gap-2 flex-wrap mb-4">
+                      {topQueries.length > 0 ? (
+                        topQueries.map((item, index) => (
+                          <span
+                            key={`${item}-${index}`}
+                            className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium"
+                          >
+                            {highlightQuery(item)}
+                          </span>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400">
+                          Nenhuma pesquisa encontrada
+                        </p>
+                      )}
                     </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center">
-                    <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
-                    <p className="text-sm text-gray-400">Nenhum produto em destaque</p>
-                  </div>
-                )}
-              </div>
-  
-              {/* Coluna 3 - Lista de Produtos */}
-              <div className="p-4 border-l w-full">
-                  <h3 className="font-bold text-gray-700 mb-2">Top Products</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    {results.resultados?.slice(0, 6).map((product, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100"
-                      >
-                        <img
-                          src={product.imagem}
-                          alt={product.nome}
-                          className="w-16 h-16 rounded-lg object-cover"
-                          onError={(e) =>
-                            (e.currentTarget.src = "https://via.placeholder.com/150")
-                          }
-                        />
-                        <div className="flex-1 text-left">
-                          <p className="text-sm font-semibold text-gray-900 leading-tight">
-                            {product.nome}
-                          </p>
-                          <p className="text-xs text-gray-500">{product.categoria}</p>
-                          <p className="text-green-500 font-bold text-sm">
-                            R$ {product.preco.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {(!results.resultados || results.resultados.length === 0) && (
+
+                  {/* Top Categories */}
+                  <h3 className="font-bold text-gray-700 mb-2">Top Categories</h3>
+                  <ul className="space-y-1 mb-4">
+                    {topCategories.length > 0 ? (
+                      topCategories.map((category, index) => (
+                        <li key={index} className="text-sm text-gray-600">
+                          {highlightQuery(category)}
+                        </li>
+                      ))
+                    ) : (
                       <p className="text-sm text-gray-400">
-                        Nenhum produto encontrado
+                        Nenhuma categoria encontrada
                       </p>
                     )}
+                  </ul>
+
+                  {/* Top Brands */}
+                  <h3 className="font-bold text-gray-700 mb-2">Top Brands</h3>
+                  <ul className="space-y-1">
+                    {topBrands.length > 0 ? (
+                      topBrands.map((brand, index) => (
+                        <li key={index} className="text-sm text-gray-600">
+                          {highlightQuery(brand)}
+                        </li>
+                      ))
+                    ) : (
+                      <p className="text-sm text-gray-400">
+                        Nenhuma marca disponível
+                      </p>
+                    )}
+                  </ul>
                 </div>
+
+                {/* Coluna 2 - Produto em Destaque */}
+                <div className="p-4 border-l">
+                  {results?.resultados?.length > 0 ? (
+                    <div className="text-center flex flex-col items-center justify-center">
+                      <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
+
+                      <a
+                        href={results.resultados[0].url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <img
+                          src={
+                            results.resultados[0].image &&
+                            results.resultados[0].image.startsWith("http")
+                              ? results.resultados[0].image
+                              : "https://via.placeholder.com/150?text=Ver"
+                          }
+                          alt={results.resultados[0].title}
+                          className="w-[215px] h-[215px] md:w-[150px] md:h-[150px] object-cover "
+                        />
+                      </a>
+
+                      <p className="text-sm font-semibold text-gray-900 mt-2 text-center">
+                        {highlightQuery(truncate(results.resultados[0].title))}
+                      </p>
+
+                      <p className="text-green-500 font-bold text-lg mt-1">
+                        R$ {results.resultados[0].price.toFixed(2)}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
+                      <p className="text-sm text-gray-400">Nenhum produto em destaque</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* 🔥 Coluna 3 - Lista de Produtos  */}
+                <div className="p-4 border-l w-full relative flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-bold text-gray-700 mb-2">Top Products</h3>
+                    <div className="grid grid-cols-2 gap-4 transition-opacity duration-300 ease-in-out">
+                      {results?.resultados?.length > 1 ? (
+                        results.resultados.slice(1, 7).map((product) => (
+                          <div
+                            key={product.id}
+                            className="flex gap-3 p-3 rounded-lg hover:bg-gray-100 transition-transform transform hover:scale-105"
+                          >
+                            <a
+                              href={product.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="min-w-[64px] max-w-[64px] min-h-[64px] max-h-[64px] flex-shrink-0"
+                            >
+                              <img
+                                src={product.image}
+                                alt={product.title}
+                                className="w-full h-full object-cover rounded-md"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://cdn.buscaflex.com/fallback.jpg";
+                                }}
+                              />
+                            </a>
+
+                            <div className="flex flex-col justify-center text-left space-y-1 overflow-hidden">
+                              <p className="text-sm font-semibold text-gray-900 leading-5 truncate">
+                                {highlightQuery(truncate(product.title, 55))}
+                              </p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {highlightQuery(truncate(product.category, 40))}
+                              </p>
+                              <p className="text-green-500 font-bold text-sm">
+                                R$ {product.price.toFixed(2)}
+                              </p>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-gray-400">Nenhum produto encontrado</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Botão fixado no canto inferior direito */}
+                  {results?.resultados?.length > 0 && (
+                    <div className="w-full flex justify-end mt-4">
+                      <button
+                        className="border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
+                        onClick={() => {
+                          window.location.href = `/busca?q=${encodeURIComponent(query)}`;
+                        }}
+                      >
+                        Ver todos os resultados
+                      </button>
+                    </div>
+                  )}
+                </div>
+
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            ) : (
+              <div className="py-6 text-center text-gray-500 text-base mt-2">
+                Nenhum resultado encontrado para <strong>{query}</strong>
+              </div>
+            )}
+
+          </div>
+        )}
     </div>
-  );  
+  );
 };
 
 export default BuscaFlexWidget;
