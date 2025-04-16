@@ -1,5 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import debounce from "lodash.debounce";
+declare global {
+  interface Window {
+    BUSCAFLEX_PREVIEW?: boolean;
+  }
+}
 
 interface Produto {
   id: string;
@@ -16,16 +21,28 @@ interface SearchResults {
 }
 
 interface WidgetConfig {
-  selector?: string;
   clientId?: string;
   placeholder?: string;
+  layout?: "heromobile" | "line" | "grid";
+  alignment?: "left" | "center" | "right";
+  blockPosition?: "left" | "right";
+  showHeroProduct?: boolean;
+  showSuggestions?: boolean;
+  showBorders?: boolean;
+  apiBaseUrl?: string;
   colors?: {
-    background?: string;
     main?: string;
+    background?: string;
     highlight?: string;
     text?: string;
+    border?: string;
+    headerText?: string;
+    mutedText?: string;
+    noResultsText?: string;
+    hoverItem?: string;
   };
 }
+
 const API_BASE_URL = "http://localhost:8085/api";
 const DEFAULT_CONFIG: WidgetConfig = {
   placeholder: "O que você procura?",
@@ -128,6 +145,28 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
     );
   };
 
+  useEffect(() => {
+    // Esse efeito só roda no modo preview do admin
+    if (!window.BUSCAFLEX_PREVIEW) return;
+  
+    const handleOutsideClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+  
+      const insideDropdown = target.closest(".autocomplete-dropdown");
+      const insideInput = target.closest("input[name='q']");
+  
+      if (!insideDropdown && !insideInput) {
+        setIsOpen(false);
+      }
+    };
+  
+    document.addEventListener("pointerdown", handleOutsideClick);
+  
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsideClick);
+    };
+  }, []);  
+
   return (
     <div className="relative w-full max-w-2xl mx-auto mt-4">
       <input
@@ -184,14 +223,6 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
               );
           }
         }}
-        onBlur={() => {
-          setTimeout(() => {
-            if (!document.activeElement?.closest(".autocomplete-dropdown")) {
-              setIsOpen(false);
-            }
-          }, 100);
-        }}
-        style={{ backgroundColor: internalConfig.colors?.background }}
       />
 
     {isOpen &&
