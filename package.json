@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
-  "prebuild": "npx tailwindcss -i ./src/input.css -o ./src/output.css",
-  "build": "tsc -b && vite build",
-  "dev": "vite",
-  "lint": "eslint .",
-  "preview": "vite preview"
-},
+  "scripts": {
+    "prebuild": "npx tailwindcss -i ./src/input.css -o ./src/output.css",
+    "build": "tsc -b && vite build",
+    "dev": "vite",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@tailwindcss/cli": "^4.0.9",
     "axios": "^1.7.9",
@@ -20,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.21.0",
     "@types/lodash.debounce": "^4.0.9",
+    "@types/node": "^22.14.1",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react": "^4.3.4",
