@@ -1,22 +1,48 @@
 import { createRoot } from 'react-dom/client';
 import BuscaFlexWidget from './components/BuscaFlexWidget';
-// widget.tsx
 import './output.css';
 
-// Função mais robusta para substituir o campo de busca original
-function replaceSearchField() {
-  const interval = setInterval(() => {
-    const originalSearch = document.querySelector('input[type="search"], input[type="text"][name="q"]');
+const SELECTOR = 'input[type="search"], input[type="text"][name="q"]';
+const WRAPPER_ID = 'buscaflex-widget-wrapper';
 
-    if (originalSearch && originalSearch.parentNode) {
-      clearInterval(interval); // Para o intervalo quando encontrar o elemento
-      const wrapper = document.createElement('div');
-      originalSearch.parentNode.replaceChild(wrapper, originalSearch);
-      const root = createRoot(wrapper);
-      root.render(<BuscaFlexWidget />);
-    }
-  }, 100); // Tenta a cada 100ms até encontrar o campo
+function injectWidget(originalSearch: HTMLInputElement) {
+  if (document.getElementById(WRAPPER_ID)) return; // já existe
+
+  const wrapper = document.createElement('div');
+  wrapper.id = WRAPPER_ID;
+
+  originalSearch.parentNode?.replaceChild(wrapper, originalSearch);
+
+  const root = createRoot(wrapper);
+  root.render(<BuscaFlexWidget />);
 }
 
-// Inicializa quando o documento estiver pronto
-document.addEventListener('DOMContentLoaded', replaceSearchField);
+function observeAndInject() {
+  const existing = document.querySelector<HTMLInputElement>(SELECTOR);
+  if (existing) {
+    injectWidget(existing);
+    return;
+  }
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of Array.from(mutation.addedNodes)) {
+        if (!(node instanceof HTMLElement)) continue;
+        const input = node.querySelector?.(SELECTOR) || (node.matches?.(SELECTOR) ? node : null);
+        if (input) {
+          injectWidget(input as HTMLInputElement);
+          observer.disconnect();
+          return;
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', observeAndInject);
+} else {
+  observeAndInject();
+}
