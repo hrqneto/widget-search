@@ -2,11 +2,12 @@ import { createRoot } from 'react-dom/client';
 import BuscaFlexWidget from './components/BuscaFlexWidget';
 import './output.css';
 
-const SELECTOR = 'input[type="search"], input[type="text"][name="q"]';
+const config = (window as any).BUSCAFLEX_CONFIG || {};
+const SELECTOR = config.selector || 'input[type="search"], input[name="q"]';
 const WRAPPER_ID = 'buscaflex-widget-wrapper';
 
 function injectWidget(originalSearch: HTMLInputElement) {
-  if (document.getElementById(WRAPPER_ID)) return; // já existe
+  if (document.getElementById(WRAPPER_ID)) return;
 
   const wrapper = document.createElement('div');
   wrapper.id = WRAPPER_ID;
@@ -14,7 +15,7 @@ function injectWidget(originalSearch: HTMLInputElement) {
   originalSearch.parentNode?.replaceChild(wrapper, originalSearch);
 
   const root = createRoot(wrapper);
-  root.render(<BuscaFlexWidget />);
+    root.render(<BuscaFlexWidget />);
 }
 
 function observeAndInject() {

@@ -16,15 +16,27 @@ interface SearchResults {
 }
 
 interface WidgetConfig {
-  backgroundColor: string;
-  placeholder: string;
+  selector?: string;
+  clientId?: string;
+  placeholder?: string;
+  colors?: {
+    background?: string;
+    main?: string;
+    highlight?: string;
+    text?: string;
+  };
 }
-
 const API_BASE_URL = "http://localhost:8085/api";
 const DEFAULT_CONFIG: WidgetConfig = {
-  backgroundColor: "#ffffff",
   placeholder: "O que você procura?",
+  colors: {
+    background: "#ffffff",
+    text: "#000000",
+    main: "#770195",
+    highlight: "#EC46D8"
+  }
 };
+
 
 const truncate = (text: string, maxLength: number = 50): string => {
   return text.length > maxLength ? text.slice(0, maxLength - 3).trim() + "..." : text;
@@ -40,21 +52,19 @@ const BuscaFlexWidget = () => {
   const [topCategories, setTopCategories] = useState<string[]>([]);
   const [topBrands, setTopBrands] = useState<string[]>([]);
 
-  const clientId = new URLSearchParams(window.location.search).get("clientId") || "products";
-
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/configs/${clientId}?t=${Date.now()}`);
-        if (!response.ok) throw new Error("Erro ao carregar configurações");
-        const data: WidgetConfig = await response.json();
-        setConfig(data);
-      } catch (error) {
-        console.error("Erro ao carregar configurações:", error);
-      }
-    };
-    fetchConfig();
-  }, [clientId]);
+    setConfig({
+      placeholder: globalConfig.placeholder || DEFAULT_CONFIG.placeholder,
+      colors: {
+        background: globalConfig.colors?.background || "#ffffff",
+        text: globalConfig.colors?.text || "#000000",
+        main: globalConfig.colors?.main || "#770195",
+        highlight: globalConfig.colors?.highlight || "#EC46D8"
+      },
+    });
+  }, []);
+  const globalConfig = (window as any).BUSCAFLEX_CONFIG || {};
+  const clientId = globalConfig.clientId || "products";
 
   const fetchAutocompleteResults = async (value: string) => {
     setIsLoading(true);
@@ -180,7 +190,7 @@ const BuscaFlexWidget = () => {
           }
         }, 100);
       }}
-      style={{ backgroundColor: config.backgroundColor }}
+      style={{ backgroundColor: config.colors?.background }}
     />
 
 
@@ -192,13 +202,13 @@ const BuscaFlexWidget = () => {
           //abertura do dropdown de busca
         <div
           className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
-          style={{ backgroundColor: config.backgroundColor }}
+          style={{ backgroundColor: config.colors?.background }}
         >
           
           {/* Ribbon vermelha */}
-          <div className="h-1 bg-red-500 rounded-t-md absolute top-0 left-0 w-full" />
+          <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
           {/* Caret apontando para o input */}
-          <div className="w-2 h-2 bg-red-500 absolute -top-1.5 left-1/2 transform -translate-x-1/2 -rotate-45 z-50" />
+          <div className="w-2 h-2 bg-black absolute -top-1.5 left-1/2 transform -translate-x-1/2 -rotate-45 z-50" />
                     
           <button
             className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
@@ -355,7 +365,7 @@ const BuscaFlexWidget = () => {
                 {results?.resultados?.length > 0 && (
                   <div className="w-full flex justify-end mt-4">
                     <button
-                      className="border border-blue-600 text-blue-600 px-4 py-2 rounded hover:bg-blue-50 transition"
+                      className="border border-black-600 text-black-600 px-4 py-2 rounded hover:bg-black-50 transition"
                       onClick={() => {
                         window.location.href = `/busca?q=${encodeURIComponent(query)}`;
                       }}
