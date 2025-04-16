@@ -15,7 +15,7 @@ function injectWidget(originalSearch: HTMLInputElement) {
   originalSearch.parentNode?.replaceChild(wrapper, originalSearch);
 
   const root = createRoot(wrapper);
-    root.render(<BuscaFlexWidget />);
+    root.render(<BuscaFlexWidget config={config} />);
 }
 
 function observeAndInject() {

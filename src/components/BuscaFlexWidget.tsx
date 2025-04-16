@@ -42,29 +42,30 @@ const truncate = (text: string, maxLength: number = 50): string => {
   return text.length > maxLength ? text.slice(0, maxLength - 3).trim() + "..." : text;
 };
 
-const BuscaFlexWidget = () => {
+const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) => {
+  const clientId = externalConfig.clientId || "products";
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResults>({ resultados: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [config, setConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
+  const [internalConfig, setInternalConfig] = useState<WidgetConfig>(DEFAULT_CONFIG);
   const [topQueries, setTopQueries] = useState<string[]>([]);
   const [topCategories, setTopCategories] = useState<string[]>([]);
   const [topBrands, setTopBrands] = useState<string[]>([]);
 
   useEffect(() => {
-    setConfig({
-      placeholder: globalConfig.placeholder || DEFAULT_CONFIG.placeholder,
+    const merged = {
+      placeholder: externalConfig.placeholder || DEFAULT_CONFIG.placeholder,
       colors: {
-        background: globalConfig.colors?.background || "#ffffff",
-        text: globalConfig.colors?.text || "#000000",
-        main: globalConfig.colors?.main || "#770195",
-        highlight: globalConfig.colors?.highlight || "#EC46D8"
+        background: externalConfig.colors?.background || DEFAULT_CONFIG.colors!.background,
+        text: externalConfig.colors?.text || DEFAULT_CONFIG.colors!.text,
+        main: externalConfig.colors?.main || DEFAULT_CONFIG.colors!.main,
+        highlight: externalConfig.colors?.highlight || DEFAULT_CONFIG.colors!.highlight,
       },
-    });
-  }, []);
-  const globalConfig = (window as any).BUSCAFLEX_CONFIG || {};
-  const clientId = globalConfig.clientId || "products";
+    };
+    setInternalConfig(merged);
+  }, [externalConfig]);
+  
 
   const fetchAutocompleteResults = async (value: string) => {
     setIsLoading(true);
@@ -129,70 +130,69 @@ const BuscaFlexWidget = () => {
 
   return (
     <div className="relative w-full max-w-2xl mx-auto mt-4">
-    <input
-      type="text"
-      autoComplete="off"
-      className="w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-400"
-      placeholder={config.placeholder}
-      value={query}
-      onChange={(e) => {
-        const value = e.target.value;
-        setQuery(value);
-        setIsOpen(true);
+      <input
+        type="text"
+        autoComplete="off"
+        className="w-full border rounded-lg px-4 py-2 shadow-sm focus:ring-2 focus:ring-blue-400"
+        placeholder={internalConfig.placeholder}
+        value={query}
+        onChange={(e) => {
+          const value = e.target.value;
+          setQuery(value);
+          setIsOpen(true);
 
-        if (value.length >= 1) {
-          debouncedFetchAutocomplete(value);
-        } else {
-          // 👇 Se limpar o campo, volta para sugestões iniciais
-          fetch(`${API_BASE_URL}/autocomplete/suggestions`)
-            .then((res) => res.json())
-            .then((data) => {
-              setTopQueries(data.topQueries.map((q: any) => q.query));
-              setTopCategories(data.topCategories.map((c: any) => c.name));
-              setTopBrands(data.topBrands.map((b: any) => b.name));
-              setResults({
-                resultados: data.topProducts || [],
+          if (value.length >= 1) {
+            debouncedFetchAutocomplete(value);
+          } else {
+            // 👇 Se limpar o campo, volta para sugestões iniciais
+            fetch(`${API_BASE_URL}/autocomplete/suggestions`)
+              .then((res) => res.json())
+              .then((data) => {
+                setTopQueries(data.topQueries.map((q: any) => q.query));
+                setTopCategories(data.topCategories.map((c: any) => c.name));
+                setTopBrands(data.topBrands.map((b: any) => b.name));
+                setResults({
+                  resultados: data.topProducts || [],
+                });
+              })
+              .catch((err) => {
+                console.error("Erro ao buscar sugestões iniciais:", err);
+                setResults({ resultados: [] });
               });
-            })
-            .catch((err) => {
-              console.error("Erro ao buscar sugestões iniciais:", err);
-              setResults({ resultados: [] });
-            });
-        }
-      }}
-      onFocus={() => {
-        setIsOpen(true);
-
-        if (query.length >= 1) {
-          if (!results) {
-            fetchAutocompleteResults(query);
           }
-        } else {
-          fetch(`${API_BASE_URL}/autocomplete/suggestions`)
-            .then((res) => res.json())
-            .then((data) => {
-              setTopQueries(data.topQueries.map((q: any) => q.query));
-              setTopCategories(data.topCategories.map((c: any) => c.name));
-              setTopBrands(data.topBrands.map((b: any) => b.name));
-              setResults({
-                resultados: data.topProducts || [],
-              });
-            })
-            .catch((err) =>
-              console.error("Erro ao buscar sugestões iniciais:", err)
-            );
-        }
-      }}
-      onBlur={() => {
-        setTimeout(() => {
-          if (!document.activeElement?.closest(".autocomplete-dropdown")) {
-            setIsOpen(false);
-          }
-        }, 100);
-      }}
-      style={{ backgroundColor: config.colors?.background }}
-    />
+        }}
+        onFocus={() => {
+          setIsOpen(true);
 
+          if (query.length >= 1) {
+            if (!results) {
+              fetchAutocompleteResults(query);
+            }
+          } else {
+            fetch(`${API_BASE_URL}/autocomplete/suggestions`)
+              .then((res) => res.json())
+              .then((data) => {
+                setTopQueries(data.topQueries.map((q: any) => q.query));
+                setTopCategories(data.topCategories.map((c: any) => c.name));
+                setTopBrands(data.topBrands.map((b: any) => b.name));
+                setResults({
+                  resultados: data.topProducts || [],
+                });
+              })
+              .catch((err) =>
+                console.error("Erro ao buscar sugestões iniciais:", err)
+              );
+          }
+        }}
+        onBlur={() => {
+          setTimeout(() => {
+            if (!document.activeElement?.closest(".autocomplete-dropdown")) {
+              setIsOpen(false);
+            }
+          }, 100);
+        }}
+        style={{ backgroundColor: internalConfig.colors?.background }}
+      />
 
     {isOpen &&
       (topQueries.length > 0 ||
@@ -202,7 +202,7 @@ const BuscaFlexWidget = () => {
           //abertura do dropdown de busca
         <div
           className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
-          style={{ backgroundColor: config.colors?.background }}
+          style={{ backgroundColor: internalConfig.colors?.background }}
         >
           
           {/* Ribbon vermelha */}
