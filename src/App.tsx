@@ -7,7 +7,7 @@ function App() {
       <h1 className="text-2xl font-bold mb-4">BuscaFlex</h1>
       <BuscaFlexWidget
         config={{
-          clientId: "store_1",
+          clientId: "products",
           placeholder: "Buscar...",
           layout: "grid",
           alignment: "left",

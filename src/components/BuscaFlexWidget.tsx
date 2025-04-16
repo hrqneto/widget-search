@@ -50,10 +50,14 @@ const DEFAULT_CONFIG: WidgetConfig = {
     background: "#ffffff",
     text: "#000000",
     main: "#770195",
-    highlight: "#EC46D8"
+    highlight: "#EC46D8",
+    border: "#E5E7EB",
+    headerText: "#770195",
+    mutedText: "#484848",
+    noResultsText: "#000000",
+    hoverItem: "#EC46D8"
   }
 };
-
 
 const truncate = (text: string, maxLength: number = 50): string => {
   return text.length > maxLength ? text.slice(0, maxLength - 3).trim() + "..." : text;
@@ -71,18 +75,15 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
   const [topBrands, setTopBrands] = useState<string[]>([]);
 
   useEffect(() => {
-    const merged = {
-      placeholder: externalConfig.placeholder || DEFAULT_CONFIG.placeholder,
+    setInternalConfig({
+      ...DEFAULT_CONFIG,
+      ...externalConfig,
       colors: {
-        background: externalConfig.colors?.background || DEFAULT_CONFIG.colors!.background,
-        text: externalConfig.colors?.text || DEFAULT_CONFIG.colors!.text,
-        main: externalConfig.colors?.main || DEFAULT_CONFIG.colors!.main,
-        highlight: externalConfig.colors?.highlight || DEFAULT_CONFIG.colors!.highlight,
+        ...DEFAULT_CONFIG.colors,
+        ...externalConfig.colors,
       },
-    };
-    setInternalConfig(merged);
+    });
   }, [externalConfig]);
-  
 
   const fetchAutocompleteResults = async (value: string) => {
     setIsLoading(true);
@@ -231,11 +232,11 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
         topBrands.length > 0 ||
         results) && (
           //abertura do dropdown de busca
-        <div
-          className="absolute left-1/2 transform -translate-x-1/2 w-[1080px] min-h-[400px] border shadow-lg mt-2 rounded-lg p-4 z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
-          style={{ backgroundColor: internalConfig.colors?.background }}
-        >
-          
+          <div
+            className="absolute left-1/2 transform -translate-x-1/2 w-[980px] min-h-[500px] border shadow-lg mt-2 rounded-lg z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
+            style={{ backgroundColor: internalConfig.colors?.background }}
+          >
+
           {/* Ribbon vermelha */}
           <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
           {/* Caret apontando para o input */}
@@ -252,66 +253,131 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
             <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
           ) : results?.resultados?.length > 0 ? (
             // ✅ BLOCO PRINCIPAL COM OS 3 PAINÉIS
-            <div className="grid grid-cols-[1.2fr_1.5fr_4fr] gap-4 h-full">
-              {/* Coluna 1 - buscas - categorias - marcas */}
-              <div className="p-4 rounded-lg">
+            <div className="grid grid-cols-[200px_200px_1fr] min-h-[500px] gap-4">
+
+              {/* 🔷 Coluna 1 - buscas - categorias - marcas */}
+              <div
+                className="relative w-full min-w-[200px] max-w-[300px]"
+                style={{
+                  borderLeft: internalConfig.showBorders
+                    ? `1px solid ${internalConfig.colors?.border}`
+                    : undefined,
+                }}
+              >
+                {/* Fundo colorido com opacidade */}
+                <div
+                  className="absolute inset-0 z-0 h-full w-full rounded-l-lg"
+                  style={{
+                    backgroundColor: internalConfig.colors?.highlight
+                      ? `${internalConfig.colors.highlight}22`
+                      : "rgba(0,0,0,0.05)",
+                  }}
+                />
+
+                {/* Conteúdo visível acima do fundo */}
+                <div className="relative z-10 px-4 py-4 w-full">
                   {/* Top Queries */}
-                  <h3 className="font-bold text-gray-700 mb-2">Top Queries</h3>
+                  <h3
+                    className="font-bold mb-2"
+                    style={{ color: internalConfig.colors?.headerText }}
+                  >
+                    Top Queries
+                  </h3>
                   <div className="flex gap-2 flex-wrap mb-4">
                     {topQueries.length > 0 ? (
                       topQueries.map((item, index) => (
                         <span
                           key={`${item}-${index}`}
-                          className="bg-green-100 text-green-700 px-3 py-1 rounded-md text-sm font-medium"
+                          className="px-3 py-1 rounded-md text-sm font-medium cursor-pointer transition"
+                          style={{
+                            backgroundColor: internalConfig.colors?.highlight,
+                            color: internalConfig.colors?.text,
+                          }}
                         >
                           {highlightQuery(item)}
                         </span>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-400">
+                      <p
+                        className="text-sm"
+                        style={{ color: internalConfig.colors?.mutedText }}
+                      >
                         Nenhuma pesquisa encontrada
                       </p>
                     )}
                   </div>
 
-                {/* Top Categories */}
-                <h3 className="font-bold text-gray-700 mb-2">Top Categories</h3>
-                <ul className="space-y-1 mb-4">
-                  {topCategories.length > 0 ? (
-                    topCategories.map((category, index) => (
-                      <li key={index} className="text-sm text-gray-600">
-                        {highlightQuery(category)}
-                      </li>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400">
-                      Nenhuma categoria encontrada
-                    </p>
-                  )}
-                </ul>
+                  {/* Top Categories */}
+                  <h3
+                    className="font-bold mb-2"
+                    style={{ color: internalConfig.colors?.headerText }}
+                  >
+                    Top Categories
+                  </h3>
+                  <ul className="space-y-1 mb-4">
+                    {topCategories.length > 0 ? (
+                      topCategories.map((category, index) => (
+                        <li
+                          key={index}
+                          className="text-sm truncate cursor-pointer hover:underline transition"
+                          style={{
+                            color: internalConfig.colors?.text,
+                          }}
+                        >
+                          {highlightQuery(category)}
+                        </li>
+                      ))
+                    ) : (
+                      <p
+                        className="text-sm"
+                        style={{ color: internalConfig.colors?.mutedText }}
+                      >
+                        Nenhuma categoria encontrada
+                      </p>
+                    )}
+                  </ul>
 
-                {/* Top Brands */}
-                <h3 className="font-bold text-gray-700 mb-2">Top Brands</h3>
-                <ul className="space-y-1">
-                  {topBrands.length > 0 ? (
-                    topBrands.map((brand, index) => (
-                      <li key={index} className="text-sm text-gray-600">
-                        {highlightQuery(brand)}
-                      </li>
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400">
-                      Nenhuma marca disponível
-                    </p>
-                  )}
-                </ul>
+                  {/* Top Brands */}
+                  <h3
+                    className="font-bold mb-2"
+                    style={{ color: internalConfig.colors?.headerText }}
+                  >
+                    Top Brands
+                  </h3>
+                  <ul className="space-y-1">
+                    {topBrands.length > 0 ? (
+                      topBrands.map((brand, index) => (
+                        <li
+                          key={index}
+                          className="text-sm truncate cursor-pointer hover:underline transition"
+                          style={{
+                            color: internalConfig.colors?.text,
+                          }}
+                        >
+                          {highlightQuery(brand)}
+                        </li>
+                      ))
+                    ) : (
+                      <p
+                        className="text-sm"
+                        style={{ color: internalConfig.colors?.mutedText }}
+                      >
+                        Nenhuma marca disponível
+                      </p>
+                    )}
+                  </ul>
+                </div>
               </div>
-
-              {/* Coluna 2 - Produto em Destaque */}
-              <div className="p-4 border-l">
+              {/* 🟣 Coluna 2 - Produto em Destaque */}
+              <div className="p-4 w-[200px] flex flex-col items-center justify-start">
                 {results?.resultados?.length > 0 ? (
-                  <div className="text-center flex flex-col items-center justify-center">
-                    <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
+                  <div className="text-center flex flex-col items-center justify-center w-full">
+                    <h3
+                      className="font-bold mb-2"
+                      style={{ color: internalConfig.colors?.headerText }}
+                    >
+                      Top Product
+                    </h3>
 
                     <a
                       href={results.resultados[0].url}
@@ -320,42 +386,77 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                     >
                       <img
                         src={
-                          results.resultados[0].image &&
-                          results.resultados[0].image.startsWith("http")
+                          results.resultados[0].image?.startsWith("http")
                             ? results.resultados[0].image
                             : "https://via.placeholder.com/150?text=Ver"
                         }
                         alt={results.resultados[0].title}
-                        className="w-[215px] h-[215px] md:w-[150px] md:h-[150px] object-cover "
+                        className="w-[215px] h-[215px] md:w-[150px] md:h-[150px] object-cover rounded-md"
                       />
                     </a>
 
-                    <p className="text-sm font-semibold text-gray-900 mt-2 text-center">
-                      {highlightQuery(truncate(results.resultados[0].title))}
-                    </p>
+                    {/* Wrapper seguro para truncar conteúdo com destaque */}
+                    <div className="w-full px-2 mt-2 overflow-hidden text-center">
+                      <p
+                        className="text-sm font-semibold leading-snug text-center"
+                        style={{ color: internalConfig.colors?.text }}
+                      >
+                        <span className="truncate inline-block max-w-full align-middle overflow-hidden whitespace-nowrap">
+                          {highlightQuery(truncate(results.resultados[0].title))}
+                        </span>
+                      </p>
+                    </div>
 
-                    <p className="text-green-500 font-bold text-lg mt-1">
+                    <p
+                      className="font-bold text-lg mt-1"
+                      style={{ color: internalConfig.colors?.highlight }}
+                    >
                       R$ {results.resultados[0].price.toFixed(2)}
                     </p>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center">
-                    <h3 className="font-bold text-gray-700 mb-2">Top Product</h3>
-                    <p className="text-sm text-gray-400">Nenhum produto em destaque</p>
+                  <div className="text-center flex flex-col items-center justify-center">
+                    <h3
+                      className="font-bold mb-2"
+                      style={{ color: internalConfig.colors?.headerText }}
+                    >
+                      Top Product
+                    </h3>
+                    <p
+                      className="text-sm"
+                      style={{ color: internalConfig.colors?.noResultsText }}
+                    >
+                      Nenhum produto em destaque
+                    </p>
                   </div>
                 )}
               </div>
 
               {/* 🔥 Coluna 3 - Lista de Produtos  */}
-              <div className="p-4 border-l w-full relative flex flex-col justify-between">
+              <div
+                className="p-4 col-span-1 flex-1"
+                style={{
+                  borderLeft: internalConfig.showBorders ? `1px solid ${internalConfig.colors?.border}` : undefined
+                }}
+              >
                 <div>
-                  <h3 className="font-bold text-gray-700 mb-2">Top Products</h3>
+                  <h3
+                    className="font-bold mb-2"
+                    style={{ color: internalConfig.colors?.headerText }}
+                  >
+                    Top Products
+                  </h3>
+
                   <div className="grid grid-cols-2 gap-4 transition-opacity duration-300 ease-in-out">
                     {results?.resultados?.length > 1 ? (
                       results.resultados.slice(1, 7).map((product) => (
                         <div
                           key={product.id}
-                          className="flex gap-3 p-3 rounded-lg hover:bg-gray-100 transition-transform transform hover:scale-105"
+                          className="flex gap-3 p-3 rounded-lg transition-transform transform hover:scale-105"
+                          style={{
+                            backgroundColor: internalConfig.colors?.hoverItem,
+                            cursor: "pointer"
+                          }}
                         >
                           <a
                             href={product.url}
@@ -373,21 +474,35 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                             />
                           </a>
 
-                          <div className="flex flex-col justify-center text-left space-y-1 overflow-hidden">
-                            <p className="text-sm font-semibold text-gray-900 leading-5 truncate">
+                          <div className="max-w-full px-2 text-centerZ overflow-hidden">
+                            <p
+                              className="text-sm font-semibold leading-snug truncate"
+                              style={{ color: internalConfig.colors?.text }}
+                            >
                               {highlightQuery(truncate(product.title, 55))}
                             </p>
-                            <p className="text-xs text-gray-500 truncate">
+                            <p
+                              className="text-xs truncate"
+                              style={{ color: internalConfig.colors?.mutedText }}
+                            >
                               {highlightQuery(truncate(product.category, 40))}
                             </p>
-                            <p className="text-green-500 font-bold text-sm">
+                            <p
+                              className="font-bold text-sm"
+                              style={{ color: internalConfig.colors?.highlight }}
+                            >
                               R$ {product.price.toFixed(2)}
                             </p>
                           </div>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-gray-400">Nenhum produto encontrado</p>
+                      <p
+                        className="text-sm"
+                        style={{ color: internalConfig.colors?.noResultsText }}
+                      >
+                        Nenhum produto encontrado
+                      </p>
                     )}
                   </div>
                 </div>
@@ -396,7 +511,12 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                 {results?.resultados?.length > 0 && (
                   <div className="w-full flex justify-end mt-4">
                     <button
-                      className="border border-black-600 text-black-600 px-4 py-2 rounded hover:bg-black-50 transition"
+                      className="px-4 py-2 rounded transition"
+                      style={{
+                        border: `1px solid ${internalConfig.colors?.border}`,
+                        color: internalConfig.colors?.text,
+                        backgroundColor: internalConfig.colors?.background
+                      }}
                       onClick={() => {
                         window.location.href = `/busca?q=${encodeURIComponent(query)}`;
                       }}
@@ -406,6 +526,7 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                   </div>
                 )}
               </div>
+
 
             </div>
           ) : (
