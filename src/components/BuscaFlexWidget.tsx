@@ -47,7 +47,7 @@ const API_BASE_URL = "http://localhost:8085/api";
 const DEFAULT_CONFIG: WidgetConfig = {
   placeholder: "O que você procura?",
   colors: {
-    background: "#ffffff",
+    background: "#770195",
     text: "#000000",
     main: "#770195",
     highlight: "#EC46D8",
@@ -57,10 +57,6 @@ const DEFAULT_CONFIG: WidgetConfig = {
     noResultsText: "#000000",
     hoverItem: "#EC46D8"
   }
-};
-
-const truncate = (text: string, maxLength: number = 50): string => {
-  return text.length > maxLength ? text.slice(0, maxLength - 3).trim() + "..." : text;
 };
 
 const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) => {
@@ -233,8 +229,8 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
         results) && (
           //abertura do dropdown de busca
           <div
-            className="absolute left-1/2 transform -translate-x-1/2 w-[980px] min-h-[500px] border shadow-lg mt-2 rounded-lg z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
-            style={{ backgroundColor: internalConfig.colors?.background }}
+          className="absolute left-1/2 transform -translate-x-1/2 w-[980px] min-h-[500px] border border-gray-200 rounded-lg z-50 h-auto overflow-y-auto bg-white autocomplete-dropdown"
+          style={{ backgroundColor: internalConfig.colors?.background }}
           >
 
           {/* Ribbon vermelha */}
@@ -253,7 +249,7 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
             <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
           ) : results?.resultados?.length > 0 ? (
             // ✅ BLOCO PRINCIPAL COM OS 3 PAINÉIS
-            <div className="grid grid-cols-[200px_200px_1fr] min-h-[500px] gap-4">
+            <div className="grid grid-cols-[210px_210px_1fr] min-h-[540px] gap-4">
 
               {/* 🔷 Coluna 1 - buscas - categorias - marcas */}
               <div
@@ -269,8 +265,8 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                   className="absolute inset-0 z-0 h-full w-full rounded-l-lg"
                   style={{
                     backgroundColor: internalConfig.colors?.highlight
-                      ? `${internalConfig.colors.highlight}22`
-                      : "rgba(0,0,0,0.05)",
+                    ? `${internalConfig.colors.highlight}12` // 60% de opacidade
+                    : "rgba(0,0,0,0.1)",                                   
                   }}
                 />
 
@@ -368,165 +364,155 @@ const BuscaFlexWidget = ({ config: externalConfig }: { config: WidgetConfig }) =
                   </ul>
                 </div>
               </div>
-              {/* 🟣 Coluna 2 - Produto em Destaque */}
-              <div className="p-4 w-[200px] flex flex-col items-center justify-start">
-                {results?.resultados?.length > 0 ? (
-                  <div className="text-center flex flex-col items-center justify-center w-full">
-                    <h3
-                      className="font-bold mb-2"
-                      style={{ color: internalConfig.colors?.headerText }}
-                    >
-                      Top Product
-                    </h3>
+          {/* 🟣 Coluna 2 - Produto em Destaque */}
+          <div className="p-4 pr-11 w-[240px] flex flex-col items-center justify-start text-center">
+            <h3
+              className="font-bold mb-4"
+              style={{ color: internalConfig.colors?.headerText }}
+            >
+              Top Product
+            </h3>
 
-                    <a
-                      href={results.resultados[0].url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        src={
-                          results.resultados[0].image?.startsWith("http")
-                            ? results.resultados[0].image
-                            : "https://via.placeholder.com/150?text=Ver"
-                        }
-                        alt={results.resultados[0].title}
-                        className="w-[215px] h-[215px] md:w-[150px] md:h-[150px] object-cover rounded-md"
-                      />
-                    </a>
+            {results?.resultados?.length > 0 ? (
+              <div className="flex flex-col items-center justify-start w-full">
+                <a
+                  href={results.resultados[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mx-auto"
+                >
+                  <img
+                    src={
+                      results.resultados[0].image?.startsWith("http")
+                        ? results.resultados[0].image
+                        : "https://via.placeholder.com/150?text=Ver"
+                    }
+                    alt={results.resultados[0].title}
+                    className="w-[260px] h-[260px] object-cover rounded-md mx-auto"
+                  />
+                </a>
 
-                    {/* Wrapper seguro para truncar conteúdo com destaque */}
-                    <div className="w-full px-2 mt-2 overflow-hidden text-center">
-                      <p
-                        className="text-sm font-semibold leading-snug text-center"
-                        style={{ color: internalConfig.colors?.text }}
-                      >
-                        <span className="truncate inline-block max-w-full align-middle overflow-hidden whitespace-nowrap">
-                          {highlightQuery(truncate(results.resultados[0].title))}
-                        </span>
-                      </p>
-                    </div>
-
-                    <p
-                      className="font-bold text-lg mt-1"
-                      style={{ color: internalConfig.colors?.highlight }}
-                    >
-                      R$ {results.resultados[0].price.toFixed(2)}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center flex flex-col items-center justify-center">
-                    <h3
-                      className="font-bold mb-2"
-                      style={{ color: internalConfig.colors?.headerText }}
-                    >
-                      Top Product
-                    </h3>
-                    <p
-                      className="text-sm"
-                      style={{ color: internalConfig.colors?.noResultsText }}
-                    >
-                      Nenhum produto em destaque
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* 🔥 Coluna 3 - Lista de Produtos  */}
-              <div
-                className="p-4 col-span-1 flex-1"
-                style={{
-                  borderLeft: internalConfig.showBorders ? `1px solid ${internalConfig.colors?.border}` : undefined
-                }}
-              >
-                <div>
-                  <h3
-                    className="font-bold mb-2"
-                    style={{ color: internalConfig.colors?.headerText }}
+                <div className="w-full mt-4 px-2 overflow-hidden">
+                  <p
+                    className="text-base font-semibold leading-snug line-clamp-3 break-words"
+                    style={{ color: internalConfig.colors?.text }}
                   >
-                    Top Products
-                  </h3>
-
-                  <div className="grid grid-cols-2 gap-4 transition-opacity duration-300 ease-in-out">
-                    {results?.resultados?.length > 1 ? (
-                      results.resultados.slice(1, 7).map((product) => (
-                        <div
-                          key={product.id}
-                          className="flex gap-3 p-3 rounded-lg transition-transform transform hover:scale-105"
-                          style={{
-                            backgroundColor: internalConfig.colors?.hoverItem,
-                            cursor: "pointer"
-                          }}
-                        >
-                          <a
-                            href={product.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="min-w-[64px] max-w-[64px] min-h-[64px] max-h-[64px] flex-shrink-0"
-                          >
-                            <img
-                              src={product.image}
-                              alt={product.title}
-                              className="w-full h-full object-cover rounded-md"
-                              onError={(e) => {
-                                e.currentTarget.src = "https://cdn.buscaflex.com/fallback.jpg";
-                              }}
-                            />
-                          </a>
-
-                          <div className="max-w-full px-2 text-centerZ overflow-hidden">
-                            <p
-                              className="text-sm font-semibold leading-snug truncate"
-                              style={{ color: internalConfig.colors?.text }}
-                            >
-                              {highlightQuery(truncate(product.title, 55))}
-                            </p>
-                            <p
-                              className="text-xs truncate"
-                              style={{ color: internalConfig.colors?.mutedText }}
-                            >
-                              {highlightQuery(truncate(product.category, 40))}
-                            </p>
-                            <p
-                              className="font-bold text-sm"
-                              style={{ color: internalConfig.colors?.highlight }}
-                            >
-                              R$ {product.price.toFixed(2)}
-                            </p>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p
-                        className="text-sm"
-                        style={{ color: internalConfig.colors?.noResultsText }}
-                      >
-                        Nenhum produto encontrado
-                      </p>
-                    )}
-                  </div>
+                    {highlightQuery(results.resultados[0].title)}
+                  </p>
                 </div>
 
-                {/* Botão fixado no canto inferior direito */}
-                {results?.resultados?.length > 0 && (
-                  <div className="w-full flex justify-end mt-4">
-                    <button
-                      className="px-4 py-2 rounded transition"
+                <p
+                  className="text-2xl font-bold mt-2"
+                  style={{ color: internalConfig.colors?.highlight }}
+                >
+                  R$ {results.resultados[0].price.toFixed(2)}
+                </p>
+              </div>
+            ) : (
+              <p
+                className="text-sm"
+                style={{ color: internalConfig.colors?.noResultsText }}
+              >
+                Nenhum produto em destaque
+              </p>
+            )}
+          </div>
+
+          {/* 🔥 Coluna 3 - Lista de Produtos  */}
+          <div
+            className="p-4 col-span-1 flex-1"
+            style={{
+              borderLeft: internalConfig.showBorders
+                ? `1px solid ${internalConfig.colors?.border}`
+                : undefined,
+            }}
+          >
+            <div>
+              <h3
+                className="font-bold mb-4"
+                style={{ color: internalConfig.colors?.headerText }}
+              >
+                Top Products
+              </h3>
+
+              <div className="grid grid-cols-2 transition-opacity duration-300 ease-in-out">
+                {results?.resultados?.length > 1 ? (
+                  results.resultados.slice(1, 7).map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex gap-3 p-3 rounded-lg transition-transform transform hover:scale-105"
                       style={{
-                        border: `1px solid ${internalConfig.colors?.border}`,
-                        color: internalConfig.colors?.text,
-                        backgroundColor: internalConfig.colors?.background
-                      }}
-                      onClick={() => {
-                        window.location.href = `/busca?q=${encodeURIComponent(query)}`;
+                        cursor: "pointer"
                       }}
                     >
-                      Ver todos os resultados
-                    </button>
-                  </div>
+                      <a
+                        href={product.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="min-w-[80px] max-w-[80px] min-h-[80px] max-h-[80px] flex-shrink-0"
+                      >
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-full h-full object-cover rounded-md"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://cdn.buscaflex.com/fallback.jpg";
+                          }}
+                        />
+                      </a>
+
+                      <div className="max-w-full flex-1">
+                      <p
+                        className="text-base font-semibold leading-tight line-clamp-2 overflow-hidden break-words"
+                        style={{ color: internalConfig.colors?.text }}
+                      >
+                        {highlightQuery(product.title)}
+                      </p>
+                      <p
+                        className="text-sm line-clamp-2 overflow-hidden break-words mt-1"
+                        style={{ color: internalConfig.colors?.mutedText }}
+                      >
+                        {highlightQuery(product.category)}
+                      </p>
+                        <p
+                          className="font-bold text-sm mt-1"
+                          style={{ color: internalConfig.colors?.highlight }}
+                        >
+                          R$ {product.price.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p
+                    className="text-sm"
+                    style={{ color: internalConfig.colors?.noResultsText }}
+                  >
+                    Nenhum produto encontrado
+                  </p>
                 )}
               </div>
+            </div>
 
+          {/* Botão fixado no canto inferior direito */}
+          {results?.resultados?.length > 0 && (
+            <div className="w-full flex mt-8">
+              <button
+                className="w-full px-4 py-2.5 rounded transition"
+                style={{
+                  border: `1px solid ${internalConfig.colors?.border}`,
+                  color: internalConfig.colors?.text,
+                  backgroundColor: internalConfig.colors?.background,
+                }}
+                onClick={() => {
+                  window.location.href = `/busca?q=${encodeURIComponent(query)}`;
+                }}
+              >
+                VER TODOS OS RESULTADOS
+              </button>
+            </div>
+          )}
+          </div>
 
             </div>
           ) : (
