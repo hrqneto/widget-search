@@ -20,7 +20,11 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* 🛠️ Adiciona os diretórios de tipos */
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": []
   },
   "include": ["src"]
 }
