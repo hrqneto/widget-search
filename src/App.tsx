@@ -1,11 +1,10 @@
-// src/App.tsx
-import BuscaFlexWidget from './components/BuscaFlexWidget';
+import AutocompleteWidget from './components/autocompleteWidget/AutocompleteWidget';
 
 function App() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">BuscaFlex</h1>
-      <BuscaFlexWidget
+      <AutocompleteWidget
         config={{
           clientId: "products",
           placeholder: "Buscar...",
