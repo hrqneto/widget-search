@@ -20,7 +20,7 @@ export default defineConfig({
         assetFileNames: '[name].[ext]',
       },
     },
-    outDir: 'dist/widget',
+    outDir: 'dist/',
     emptyOutDir: true,
   }
 });
