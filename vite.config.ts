@@ -8,19 +8,19 @@ export default defineConfig({
     'process.env': {},
   },
   build: {
+    lib: {
+      entry: './src/widgetConfig/widget.ts',
+      name: 'BuscaFlexWidget',
+      fileName: () => 'embed.iife.js',
+      formats: ['iife'],
+    },
     rollupOptions: {
-      input: './src/widget.tsx',
       output: {
         entryFileNames: 'embed.iife.js',
         assetFileNames: '[name].[ext]',
       },
     },
-    lib: {
-      entry: './src/widget.tsx',
-      name: 'BuscaFlexWidget',
-      fileName: () => 'embed.iife.js',
-      formats: ['iife'],
-    },
-  },
-  
+    outDir: 'dist/widget',
+    emptyOutDir: true,
+  }
 });
