@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 export interface Produto {
   id: string;
   title: string;
@@ -80,3 +81,25 @@ export interface ColumnHeroProductProps {
   highlightQuery: (text: string) => React.ReactNode;
   colors: Colors;
 };
+export interface MobileLayoutProps {
+  results: Produto[];
+  topCategories: string[];
+  topBrands: string[];
+  highlightQuery: (text: string) => ReactNode[];
+  colors: {
+    main?: string;
+    background?: string;
+    text?: string;
+    highlightText?: string;
+    noResultsText?: string;
+    border?: string;
+    hoverItem?: string;
+    activeTab?: string;
+    inactiveTab?: string;
+  };
+  showBorders: boolean | undefined;
+  query: string;
+  setQuery: (value: string) => void;
+  setIsOpen: (value: boolean) => void;
+  placeholder: string | undefined;
+}

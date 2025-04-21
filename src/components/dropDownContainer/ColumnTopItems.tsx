@@ -16,7 +16,6 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
         borderLeft: showBorders ? `1px solid ${colors.border}` : undefined,
       }}
     >
-      {/* Fundo colorido com opacidade */}
       <div
         className="absolute inset-0 z-0 h-full w-full rounded-l-lg"
         style={{
@@ -24,7 +23,6 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
         }}
       />
 
-      {/* Conteúdo visível acima do fundo */}
       <div className="relative z-10 px-4 py-4 w-full">
         {/* Top Queries */}
         <h3 className="font-bold mb-2" style={{ color: colors.headerText }}>
