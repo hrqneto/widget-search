@@ -1,5 +1,5 @@
 // 📁 src/components/autocompleteWidget/AutocompleteWidget.tsx
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchInput from "../searchInput/SearchInput";
 import ColumnLayout from "../columnLayout/ColumnLayout";
 import MobileLayout from "../columnLayout/MobileLayout";
@@ -35,6 +35,10 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     debouncedFetchAutocomplete
   } = useAutocomplete(clientId, setTopQueries, setTopCategories, setTopBrands, setResults, setIsLoading);
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dropdownLeftOffset, setDropdownLeftOffset] = useState(0);
+
   useEffect(() => () => debouncedFetchAutocomplete.cancel(), [debouncedFetchAutocomplete]);
 
   useEffect(() => {
@@ -46,13 +50,31 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     }
   }, [query, fetchInitialSuggestions, debouncedFetchAutocomplete, setIsOpen]);
 
+useEffect(() => {
+  if (!inputRef.current || !dropdownRef.current) return;
+  const inputRect = inputRef.current.getBoundingClientRect();
+  const dropdownWidth = 980;
+  const screenWidth = window.innerWidth;
+  const margin = 16;
+
+  // posição ideal (centralizado ao input)
+  let idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
+
+  // ajuste: se ultrapassa a tela, puxa pra dentro
+  const maxLeft = screenWidth - dropdownWidth - margin;
+  const boundedLeft = Math.max(margin, Math.min(idealLeft, maxLeft));
+
+  setDropdownLeftOffset(boundedLeft);
+}, [query, isOpen]);
+
   useOutsideClickClose("autocomplete-dropdown", () => setIsOpen(false));
 
   return (
     <WidgetConfigContext.Provider value={internalConfig}>
-      <div className="relative w-full max-w-2xl mx-auto mt-4">
+      <div className="relative w-full max-w-full mx-auto mt-4">
         <div className={isMobile && isOpen ? "hidden" : "block"}>
           <SearchInput
+            inputRef={inputRef}
             query={query}
             setQuery={setQuery}
             setIsOpen={setIsOpen}
@@ -64,17 +86,29 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
 
         {isOpen && (topQueries.length || topCategories.length || topBrands.length || results.length) > 0 && (
           <div
+            ref={dropdownRef}
             className={`autocomplete-dropdown ${
               isMobile
                 ? "fixed inset-0 w-screen h-screen bg-white z-[9999] rounded-none"
-                : "absolute left-1/2 transform -translate-x-1/2 w-[980px] min-h-[500px] border border-gray-950 rounded-lg z-50 bg-white"
+                : "absolute min-h-[500px] mt-3.5 border border-gray-950 rounded-lg z-50 bg-white"
             }`}
-            style={{ backgroundColor: internalConfig.colors?.background }}
+            style={{
+              backgroundColor: internalConfig.colors?.background,
+              left: isMobile ? undefined : dropdownLeftOffset,
+              width: isMobile ? "100%" : "980px",
+            }}
           >
             {!isMobile && (
               <>
                 <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
-                <div className="w-2 h-2 bg-black absolute -top-1.5 left-1/2 transform -translate-x-1/2 -rotate-45 z-50" />
+                <div
+                  className="w-2 h-2 bg-black absolute -top-1.5 -rotate-45 z-50"
+                  style={{
+                    left: inputRef.current
+                      ? `${inputRef.current.getBoundingClientRect().left + inputRef.current.offsetWidth / 2 - dropdownLeftOffset}px`
+                      : "50%",
+                  }}
+                />
               </>
             )}
             <button
