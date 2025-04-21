@@ -58,7 +58,7 @@ useEffect(() => {
   const margin = 16;
 
   // posição ideal (centralizado ao input)
-  let idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
+  const idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
 
   // ajuste: se ultrapassa a tela, puxa pra dentro
   const maxLeft = screenWidth - dropdownWidth - margin;

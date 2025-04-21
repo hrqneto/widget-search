@@ -33,7 +33,6 @@ const ColumnLayout: React.FC<Props> = ({
         topBrands={topBrands}
         highlightQuery={highlightQuery}
         colors={colors}
-        showBorders={showBorders}
       />
       <ColumnHeroProduct
         product={results[0]}
