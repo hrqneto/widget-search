@@ -1,9 +1,9 @@
-// 📁 src/components/autocompleteWidget/AutocompleteWidget.tsx
+// ✅ Versão completa do AutocompleteWidget com painel de controle estilo Luigi's Box
+
 import { useEffect, useRef, useState } from "react";
 import SearchInput from "../searchInput/SearchInput";
-import ColumnLayout from "../columnLayout/ColumnLayout";
+import LayoutSwitch from "../layout/LayoutSwitch";
 import MobileLayout from "../columnLayout/MobileLayout";
-
 import { useAutocomplete } from "../../hooks/useAutocomplete";
 import { useWidgetState } from "../../hooks/useWidgetState";
 import { useOutsideClickClose } from "../../hooks/useOutsideClickClose";
@@ -12,13 +12,31 @@ import { highlightQuery as baseHighlightQuery } from "../../utils/highlightQuery
 import { WidgetConfigContext } from "../../context/WidgetConfigContext";
 import type { WidgetConfig } from "../../types";
 import { useIsMobile } from "../../hooks/useIsMobile";
+import { ReactNode } from "react";
+
+interface BlockConfig {
+  id: "hero" | "products" | "categories" | "brands" | "queries";
+  enabled: boolean;
+  position: number;
+  name: string;
+  size: number;
+  recommendedName?: string;
+  recommendedSize?: number;
+  heroName?: string;
+}
+
+const defaultBlockConfigs: BlockConfig[] = [
+  { id: "hero", enabled: true, position: 0, name: "Top product", size: 1, heroName: "Top product" },
+  { id: "products", enabled: true, position: 1, name: "Products", size: 7 },
+  { id: "queries", enabled: true, position: 2, name: "Queries", size: 4, recommendedName: "Top queries", recommendedSize: 4 },
+  { id: "categories", enabled: true, position: 3, name: "Categories", size: 5, recommendedName: "Top categories", recommendedSize: 5 },
+  { id: "brands", enabled: true, position: 4, name: "Brands", size: 5, recommendedName: "Top brands", recommendedSize: 5 },
+];
 
 const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }) => {
   const {
-    query, setQuery,
-    results, setResults,
-    isLoading, setIsLoading,
-    isOpen, setIsOpen,
+    query, setQuery, results, setResults,
+    isLoading, setIsLoading, isOpen, setIsOpen,
     topQueries, setTopQueries,
     topCategories, setTopCategories,
     topBrands, setTopBrands,
@@ -26,17 +44,24 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
 
   const clientId = externalConfig.clientId || "products";
   const internalConfig = useWidgetConfigMerged(externalConfig);
-  const highlightQuery = (text: string) => baseHighlightQuery(text, query);
+  const highlightQuery = (text: string): ReactNode => baseHighlightQuery(text, query);
   const isMobile = useIsMobile(1020);
+
+  const [fixarAberto, setFixarAberto] = useState(true);
+  const [blockConfigs, setBlockConfigs] = useState<BlockConfig[]>(defaultBlockConfigs);
+
+  const structure = blockConfigs.filter(b => b.enabled).map(b => b.id);
 
   const {
     fetchInitialSuggestions,
     fetchAutocompleteResults,
-    debouncedFetchAutocomplete
-  } = useAutocomplete(clientId, setTopQueries, setTopCategories, setTopBrands, setResults, setIsLoading);
+    debouncedFetchAutocomplete,
+  } = useAutocomplete(
+    clientId, setTopQueries, setTopCategories, setTopBrands, setResults, setIsLoading
+  );
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
   const [dropdownLeftOffset, setDropdownLeftOffset] = useState(0);
 
   useEffect(() => () => debouncedFetchAutocomplete.cancel(), [debouncedFetchAutocomplete]);
@@ -48,37 +73,80 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     } else {
       debouncedFetchAutocomplete(query);
     }
-  }, [query, fetchInitialSuggestions, debouncedFetchAutocomplete, setIsOpen]);
+  }, [query]);
 
-useEffect(() => {
-  if (!inputRef.current || !dropdownRef.current) return;
-  const inputRect = inputRef.current.getBoundingClientRect();
-  const dropdownWidth = 980;
-  const screenWidth = window.innerWidth;
-  const margin = 16;
+  useEffect(() => {
+    if (!inputRef.current || !dropdownRef.current) return;
+    const inputRect = inputRef.current.getBoundingClientRect();
+    const dropdownWidth = 980;
+    const screenWidth = window.innerWidth;
+    const margin = 16;
+    const idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
+    const maxLeft = screenWidth - dropdownWidth - margin;
+    const boundedLeft = Math.max(margin, Math.min(idealLeft, maxLeft));
+    setDropdownLeftOffset(boundedLeft);
+  }, [query, isOpen]);
 
-  // posição ideal (centralizado ao input)
-  const idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
+  useOutsideClickClose("autocomplete-dropdown", () => {
+    if (!fixarAberto) setIsOpen(false);
+  });
 
-  // ajuste: se ultrapassa a tela, puxa pra dentro
-  const maxLeft = screenWidth - dropdownWidth - margin;
-  const boundedLeft = Math.max(margin, Math.min(idealLeft, maxLeft));
-
-  setDropdownLeftOffset(boundedLeft);
-}, [query, isOpen]);
-
-  useOutsideClickClose("autocomplete-dropdown", () => setIsOpen(false));
+  const updateBlock = (id: BlockConfig["id"], key: keyof BlockConfig, value: any) => {
+    setBlockConfigs(prev =>
+      prev.map(b => b.id === id ? { ...b, [key]: value } : b)
+    );
+  };
 
   return (
     <WidgetConfigContext.Provider value={internalConfig}>
       <div className="relative w-full max-w-full mx-auto mt-4">
+        {/* 🎛️ Painel de configuração completo */}
         <div className={isMobile && isOpen ? "hidden" : "block"}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm p-2 bg-gray-50 rounded">
+            {blockConfigs.map(block => (
+              <div key={block.id} className="border p-2 rounded">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold capitalize">{block.id}</label>
+                  <input
+                    type="checkbox"
+                    checked={block.enabled}
+                    onChange={() => updateBlock(block.id, "enabled", !block.enabled)}
+                  />
+                </div>
+                <div className="flex flex-col gap-1 mt-2">
+                  <label>Position <input type="number" className="border rounded p-1 w-full" value={block.position} onChange={e => updateBlock(block.id, "position", parseInt(e.target.value))} /></label>
+                  <label>Name <input type="text" className="border rounded p-1 w-full" value={block.name} onChange={e => updateBlock(block.id, "name", e.target.value)} /></label>
+                  <label>Size <input type="number" className="border rounded p-1 w-full" value={block.size} onChange={e => updateBlock(block.id, "size", parseInt(e.target.value))} /></label>
+                  {block.recommendedName !== undefined && (
+                    <>
+                      <label>Recommended Name <input type="text" className="border rounded p-1 w-full" value={block.recommendedName} onChange={e => updateBlock(block.id, "recommendedName", e.target.value)} /></label>
+                      <label>Recommended Size <input type="number" className="border rounded p-1 w-full" value={block.recommendedSize} onChange={e => updateBlock(block.id, "recommendedSize", parseInt(e.target.value))} /></label>
+                    </>
+                  )}
+                  {block.heroName !== undefined && (
+                    <label>Hero Product Name <input type="text" className="border rounded p-1 w-full" value={block.heroName} onChange={e => updateBlock(block.id, "heroName", e.target.value)} /></label>
+                  )}
+                </div>
+              </div>
+            ))}
+            <div className="col-span-full text-right">
+              <label className="text-red-600 font-medium">
+                <input
+                  type="checkbox"
+                  checked={fixarAberto}
+                  onChange={() => setFixarAberto(prev => !prev)}
+                  className="mr-1"
+                /> manter aberto
+              </label>
+            </div>
+          </div>
+
           <SearchInput
             inputRef={inputRef}
             query={query}
             setQuery={setQuery}
             setIsOpen={setIsOpen}
-            placeholder={internalConfig.placeholder}
+            placeholder={internalConfig.placeholder || ""}
             fetchAutocompleteResults={fetchAutocompleteResults}
             fetchSuggestions={fetchInitialSuggestions}
           />
@@ -98,19 +166,6 @@ useEffect(() => {
               width: isMobile ? "100%" : "980px",
             }}
           >
-            {!isMobile && (
-              <>
-                <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
-                <div
-                  className="w-2 h-2 bg-black absolute -top-1.5 -rotate-45 z-50"
-                  style={{
-                    left: inputRef.current
-                      ? `${inputRef.current.getBoundingClientRect().left + inputRef.current.offsetWidth / 2 - dropdownLeftOffset}px`
-                      : "50%",
-                  }}
-                />
-              </>
-            )}
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
               onClick={() => setIsOpen(false)}
@@ -121,35 +176,40 @@ useEffect(() => {
 
             {isLoading ? (
               <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
-            ) : results.length > 0 ? (
-              isMobile ? (
-                <MobileLayout
-                  results={results}
-                  topCategories={topCategories}
-                  topBrands={topBrands}
-                  highlightQuery={highlightQuery}
-                  colors={internalConfig.colors!}
-                  showBorders={internalConfig.showBorders ?? false}
-                  query={query}
-                  setQuery={setQuery}
-                  setIsOpen={setIsOpen}
-                  placeholder={internalConfig.placeholder}
-                />
-              ) : (
-                <ColumnLayout
-                  results={results}
-                  topQueries={topQueries}
-                  topCategories={topCategories}
-                  topBrands={topBrands}
-                  highlightQuery={highlightQuery}
-                  colors={internalConfig.colors!}
-                  showBorders={internalConfig.showBorders ?? false}
-                />
-              )
+            ) : isMobile ? (
+              <MobileLayout
+                layout={internalConfig.layout || "destaqueMobile"}
+                isMobile={isMobile}
+                results={results}
+                topQueries={topQueries}
+                topCategories={topCategories}
+                topBrands={topBrands}
+                highlightQuery={highlightQuery}
+                colors={internalConfig.colors || {}}
+                showBorders={internalConfig.showBorders}
+                query={query}
+                setQuery={setQuery}
+                setIsOpen={setIsOpen}
+                placeholder={internalConfig.placeholder || ""}
+                structure={structure}
+              />
             ) : (
-              <div className="py-6 text-center text-base mt-2" style={{ color: internalConfig.colors?.noResultsText }}>
-                Nenhum resultado encontrado para <strong>{query}</strong>
-              </div>
+              <LayoutSwitch
+                layout={internalConfig.layout || "grid"}
+                isMobile={isMobile}
+                results={results}
+                topQueries={topQueries}
+                topCategories={topCategories}
+                topBrands={topBrands}
+                highlightQuery={highlightQuery}
+                colors={internalConfig.colors || {}}
+                showBorders={internalConfig.showBorders}
+                query={query}
+                setQuery={setQuery}
+                setIsOpen={setIsOpen}
+                placeholder={internalConfig.placeholder || ""}
+                structure={structure}
+              />
             )}
           </div>
         )}
