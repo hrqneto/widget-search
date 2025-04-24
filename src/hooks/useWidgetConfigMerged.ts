@@ -5,6 +5,7 @@ import type { WidgetConfig } from "../types";
 export function useWidgetConfigMerged(externalConfig: WidgetConfig): WidgetConfig {
   return {
     ...DEFAULT_CONFIG,
+    
     ...externalConfig,
     colors: {
       ...DEFAULT_CONFIG.colors,
