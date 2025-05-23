@@ -1,4 +1,4 @@
-// ✅ Versão completa do AutocompleteWidget com painel de controle estilo Luigi's Box
+// ✅ Versão final com títulos dinâmicos nos blocos de autocomplete (como na Luigi’s Box)
 
 import { useEffect, useRef, useState } from "react";
 import SearchInput from "../searchInput/SearchInput";
@@ -81,7 +81,7 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     const dropdownWidth = 980;
     const screenWidth = window.innerWidth;
     const margin = 16;
-    const idealLeft = inputRect.left + inputRect.width / 2 - dropdownWidth / 2;
+    const idealLeft = inputRect.left + inputRef.current.offsetWidth / 2 - dropdownWidth / 2;
     const maxLeft = screenWidth - dropdownWidth - margin;
     const boundedLeft = Math.max(margin, Math.min(idealLeft, maxLeft));
     setDropdownLeftOffset(boundedLeft);
@@ -92,44 +92,42 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
   });
 
   const updateBlock = (id: BlockConfig["id"], key: keyof BlockConfig, value: any) => {
-    setBlockConfigs(prev =>
-      prev.map(b => b.id === id ? { ...b, [key]: value } : b)
-    );
+    setBlockConfigs(prev => prev.map(b => b.id === id ? { ...b, [key]: value } : b));
   };
 
   return (
-    <WidgetConfigContext.Provider value={internalConfig}>
+    <WidgetConfigContext.Provider value={{ ...internalConfig }}>
       <div className="relative w-full max-w-full mx-auto mt-4">
-        {/* 🎛️ Painel de configuração completo */}
         <div className={isMobile && isOpen ? "hidden" : "block"}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-sm p-2 bg-gray-50 rounded">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 text-sm p-2 bg-gray-50 rounded">
             {blockConfigs.map(block => (
-              <div key={block.id} className="border p-2 rounded">
+              <div key={block.id} className="border p-2 rounded bg-white shadow-sm">
                 <div className="flex items-center justify-between">
-                  <label className="font-bold capitalize">{block.id}</label>
+                  <label className="font-semibold capitalize">{block.id}</label>
                   <input
                     type="checkbox"
                     checked={block.enabled}
                     onChange={() => updateBlock(block.id, "enabled", !block.enabled)}
+                    className="accent-purple-500"
                   />
                 </div>
-                <div className="flex flex-col gap-1 mt-2">
-                  <label>Position <input type="number" className="border rounded p-1 w-full" value={block.position} onChange={e => updateBlock(block.id, "position", parseInt(e.target.value))} /></label>
-                  <label>Name <input type="text" className="border rounded p-1 w-full" value={block.name} onChange={e => updateBlock(block.id, "name", e.target.value)} /></label>
-                  <label>Size <input type="number" className="border rounded p-1 w-full" value={block.size} onChange={e => updateBlock(block.id, "size", parseInt(e.target.value))} /></label>
+                <div className="grid grid-cols-2 gap-1 mt-2">
+                  <label className="col-span-1">Position <input type="number" className="border rounded px-1 w-full" value={block.position} onChange={e => updateBlock(block.id, "position", parseInt(e.target.value))} /></label>
+                  <label className="col-span-1">Size <input type="number" className="border rounded px-1 w-full" value={block.size} onChange={e => updateBlock(block.id, "size", parseInt(e.target.value))} /></label>
+                  <label className="col-span-2">Name <input type="text" className="border rounded px-1 w-full" value={block.name} onChange={e => updateBlock(block.id, "name", e.target.value)} /></label>
                   {block.recommendedName !== undefined && (
                     <>
-                      <label>Recommended Name <input type="text" className="border rounded p-1 w-full" value={block.recommendedName} onChange={e => updateBlock(block.id, "recommendedName", e.target.value)} /></label>
-                      <label>Recommended Size <input type="number" className="border rounded p-1 w-full" value={block.recommendedSize} onChange={e => updateBlock(block.id, "recommendedSize", parseInt(e.target.value))} /></label>
+                      <label className="col-span-1">Recommended Name <input type="text" className="border rounded px-1 w-full" value={block.recommendedName} onChange={e => updateBlock(block.id, "recommendedName", e.target.value)} /></label>
+                      <label className="col-span-1">Recommended Size <input type="number" className="border rounded px-1 w-full" value={block.recommendedSize} onChange={e => updateBlock(block.id, "recommendedSize", parseInt(e.target.value))} /></label>
                     </>
                   )}
                   {block.heroName !== undefined && (
-                    <label>Hero Product Name <input type="text" className="border rounded p-1 w-full" value={block.heroName} onChange={e => updateBlock(block.id, "heroName", e.target.value)} /></label>
+                    <label className="col-span-2">Hero Product Name <input type="text" className="border rounded px-1 w-full" value={block.heroName} onChange={e => updateBlock(block.id, "heroName", e.target.value)} /></label>
                   )}
                 </div>
               </div>
             ))}
-            <div className="col-span-full text-right">
+            <div className="col-span-full text-right mt-2">
               <label className="text-red-600 font-medium">
                 <input
                   type="checkbox"
@@ -152,7 +150,7 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
           />
         </div>
 
-        {isOpen && (topQueries.length || topCategories.length || topBrands.length || results.length) > 0 && (
+        {isOpen && (
           <div
             ref={dropdownRef}
             className={`autocomplete-dropdown ${
@@ -175,42 +173,54 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
             </button>
 
             {isLoading ? (
-              <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
-            ) : isMobile ? (
-              <MobileLayout
-                layout={internalConfig.layout || "destaqueMobile"}
-                isMobile={isMobile}
-                results={results}
-                topQueries={topQueries}
-                topCategories={topCategories}
-                topBrands={topBrands}
-                highlightQuery={highlightQuery}
-                colors={internalConfig.colors || {}}
-                showBorders={internalConfig.showBorders}
-                query={query}
-                setQuery={setQuery}
-                setIsOpen={setIsOpen}
-                placeholder={internalConfig.placeholder || ""}
-                structure={structure}
-              />
+  <p className="text-center text-gray-500 py-6">Carregando resultados...</p>
             ) : (
-              <LayoutSwitch
-                layout={internalConfig.layout || "grid"}
-                isMobile={isMobile}
-                results={results}
-                topQueries={topQueries}
-                topCategories={topCategories}
-                topBrands={topBrands}
-                highlightQuery={highlightQuery}
-                colors={internalConfig.colors || {}}
-                showBorders={internalConfig.showBorders}
-                query={query}
-                setQuery={setQuery}
-                setIsOpen={setIsOpen}
-                placeholder={internalConfig.placeholder || ""}
-                structure={structure}
-              />
+              (topQueries.length > 0 ||
+                topCategories.length > 0 ||
+                topBrands.length > 0 ||
+                results.length > 0) ? (
+                isMobile ? (
+                  <MobileLayout
+                    layout={internalConfig.layout || "destaqueMobile"}
+                    isMobile={isMobile}
+                    results={results}
+                    topQueries={topQueries}
+                    topCategories={topCategories}
+                    topBrands={topBrands}
+                    highlightQuery={highlightQuery}
+                    colors={internalConfig.colors || {}}
+                    showBorders={internalConfig.showBorders}
+                    query={query}
+                    setQuery={setQuery}
+                    setIsOpen={setIsOpen}
+                    placeholder={internalConfig.placeholder || ""}
+                    structure={structure}
+                    blockConfigs={blockConfigs}
+                  />
+                ) : (
+                  <LayoutSwitch
+                    layout={internalConfig.layout || "grid"}
+                    isMobile={isMobile}
+                    results={results}
+                    topQueries={topQueries}
+                    topCategories={topCategories}
+                    topBrands={topBrands}
+                    highlightQuery={highlightQuery}
+                    colors={internalConfig.colors || {}}
+                    showBorders={internalConfig.showBorders}
+                    query={query}
+                    setQuery={setQuery}
+                    setIsOpen={setIsOpen}
+                    placeholder={internalConfig.placeholder || ""}
+                    structure={structure}
+                    blockConfigs={blockConfigs}
+                  />
+                )
+              ) : (
+                <p className="text-center text-gray-400 text-sm py-8">Nenhuma sugestão disponível.</p>
+              )
             )}
+
           </div>
         )}
       </div>
