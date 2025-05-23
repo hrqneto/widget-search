@@ -1,14 +1,19 @@
 import React from "react";
-import type { ColumnTopItemsProps } from "../../types";
+import type { ColumnTopItemsProps, BlockConfig } from "../../types";
 
-const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
+const ColumnTopItems: React.FC<ColumnTopItemsProps & { blockConfigs: BlockConfig[] }> = ({
   topQueries,
   topCategories,
   topBrands,
   highlightQuery,
   colors,
-  showBorders
+  showBorders,
+  blockConfigs,
+  
 }) => {
+  const getTitle = (id: BlockConfig["id"]) =>
+    blockConfigs.find(b => b.id === id)?.recommendedName || id;
+
   return (
     <div
       className="relative w-full min-w-[200px] max-w-[300px]"
@@ -24,9 +29,8 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
       />
 
       <div className="relative z-10 px-4 py-4 w-full">
-        {/* Top Queries */}
         <h3 className="font-bold mb-2" style={{ color: colors.headerText }}>
-          Top Queries
+          {getTitle("queries")}
         </h3>
         <div className="flex gap-2 flex-wrap mb-4">
           {topQueries.length > 0 ? (
@@ -36,19 +40,42 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
                 className="px-3 py-1 rounded-md text-sm font-medium cursor-pointer transition"
                 style={{ backgroundColor: colors.highlight, color: colors.text }}
               >
-                {highlightQuery(item)}
+                {highlightQuery(typeof item === "string" ? item : item.query)}
               </span>
             ))
           ) : (
-            <p className="text-sm" style={{ color: colors.mutedText }}>
-              Nenhuma pesquisa encontrada
-            </p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {topQueries.length > 0 ? (
+                topQueries.slice(0, 3).map((item, index) => (
+                  <span
+                    key={index}
+                    className="bg-red-600 text-white px-2 py-1 text-sm rounded"
+                  >
+                    {highlightQuery(typeof item === 'string' ? item : item.query)}
+                  </span>
+                ))
+              ) : (
+                <>
+                  <p className="text-sm mb-2 font-semibold" style={{ color: colors.headerText }}>
+                    Buscas populares
+                  </p>
+                  {["camisa", "tênis", "mochila"].map((item, index) => (
+                    <span
+                      key={index}
+                      className="bg-red-600 text-white px-2 py-1 text-sm rounded"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </>
+              )}
+            </div>
+
           )}
         </div>
 
-        {/* Top Categories */}
         <h3 className="font-bold mb-2" style={{ color: colors.headerText }}>
-          Top Categories
+          {getTitle("categories")}
         </h3>
         <ul className="space-y-1 mb-4">
           {topCategories.length > 0 ? (
@@ -68,9 +95,8 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps> = ({
           )}
         </ul>
 
-        {/* Top Brands */}
         <h3 className="font-bold mb-2" style={{ color: colors.headerText }}>
-          Top Brands
+          {getTitle("brands")}
         </h3>
         <ul className="space-y-1">
           {topBrands.length > 0 ? (
