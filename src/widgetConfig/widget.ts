@@ -28,6 +28,7 @@ function getWidgetConfig(): WidgetConfig {
       noResultsText: raw?.colors?.noResultsText || "#222222",
       hoverItem: raw?.colors?.hoverItem || "#eeeeee",
     },
+    blockConfigs: []
   };
 }
 
