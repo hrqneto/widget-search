@@ -24,7 +24,8 @@ function App() {
             mutedText: "#999999",
             noResultsText: "#222222",
             hoverItem: "#eeeeee"
-          }
+          },
+          blockConfigs: []
         }}
       />
     </div>
