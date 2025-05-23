@@ -15,6 +15,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   setQuery,
   setIsOpen,
   placeholder,
+  blockConfigs
 }) => {
   const [activeTab, setActiveTab] = useState<'products' | 'categories' | 'brands'>('products');
 
@@ -47,7 +48,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             {highlightQuery(product.category)}
           </p>
           <p className="text-pink-500 font-semibold mt-1">
-            R$ {product.price.toFixed(2)}
+            {typeof product.price === "number"
+              ? `R$ ${product.price.toFixed(2)}`
+              : "Preço indisponível"}
           </p>
         </div>
       </div>
@@ -123,6 +126,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             highlightQuery={highlightQuery}
             colors={colors}
             showBorders={showBorders}
+            blockConfigs={blockConfigs}
           />
         </div>
       )}
@@ -136,6 +140,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             highlightQuery={highlightQuery}
             colors={colors}
             showBorders={showBorders}
+            blockConfigs={blockConfigs}
           />
         </div>
       )}
