@@ -37,6 +37,7 @@ export interface WidgetConfig {
   apiBaseUrl?: string;
   selector?: string;
   colors?: Colors;
+  blockConfigs: []; 
 }
 
 export interface SearchInputProps {
@@ -49,20 +50,34 @@ export interface SearchInputProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
+// em types/index.ts ou types/widget.ts
+export interface BlockConfig {
+  id: "hero" | "products" | "categories" | "brands" | "queries";
+  enabled: boolean;
+  position: number;
+  name: string;
+  size: number;
+  recommendedName?: string;
+  recommendedSize?: number;
+  heroName?: string;
+}
 export interface ColumnProductListProps {
   products: Produto[];
   highlightQuery: (text: string) => ReactNode;
   colors: Colors;
   showBorders?: boolean;
+  blockConfigs: BlockConfig[];
+  isSuggestion?: boolean;
 }
 
 export interface ColumnTopItemsProps {
-  topQueries: string[];
+  topQueries: string[] | { query: string }[];
   topCategories: string[];
   topBrands: string[];
   highlightQuery: (text: string) => ReactNode;
   colors: Colors;
   showBorders?: boolean;
+  blockConfigs: BlockConfig[];
 }
 
 export interface ColumnHeroProductProps {
@@ -87,10 +102,11 @@ export interface MobileLayoutProps {
   setIsOpen: (value: boolean) => void;
   placeholder: string;
   structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
+  blockConfigs: BlockConfig[];
 }
 
 export interface LayoutProps {
-  layout: LayoutOption;
+  layout?: LayoutOption;
   isMobile: boolean;
   results: Produto[];
   topQueries: string[];
