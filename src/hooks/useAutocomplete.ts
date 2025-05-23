@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from "react";
 import debounce from "lodash.debounce";
-import type { Produto, SuggestionResponse } from "../types";
+import type { Produto } from "../types";
+import { normalizeAutocomplete } from "../utils/normalizeAutocomplete";
 
 export function useAutocomplete(
   clientId: string,
@@ -23,12 +24,13 @@ export function useAutocomplete(
       const res = await fetch(
         `http://localhost:8085/api/autocomplete/suggestions?client_id=${clientId}`
       );
-      const data: SuggestionResponse = await res.json();
+      const data = await res.json();
+      const { queries, categories, brands, products } = normalizeAutocomplete(data);
 
-      setTopQueries(data.topQueries?.map((q) => q.query) || []);
-      setTopCategories(data.topCategories?.map((c) => c.name) || []);
-      setTopBrands(data.topBrands?.map((b) => b.name) || []);
-      setResults(data.topProducts || []);
+      setTopQueries(queries);
+      setTopCategories(categories);
+      setTopBrands(brands);
+      setResults(products);
 
       fetchStateRef.current.hasFetchedInitialSuggestions = true;
     } catch (err) {
@@ -45,16 +47,18 @@ export function useAutocomplete(
     setIsLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:8085/api/autocomplete/search?q=${encodeURIComponent(value)}&client_id=${clientId}`
+        `http://localhost:8085/api/autocomplete?q=${encodeURIComponent(value)}&client_id=${clientId}`
       );
+
       if (fetchStateRef.current.activeRequests !== requestId) return;
 
-      const data: SuggestionResponse = await res.json();
+      const data = await res.json();
+      const { queries, categories, brands, products } = normalizeAutocomplete(data);
 
-      setTopQueries(data.queries?.map((q) => q.query) || []);
-      setTopCategories(data.catalogues?.map((c) => c.name) || []);
-      setTopBrands(data.brands?.map((b) => b.name) || []);
-      setResults(data.products || []);
+      setTopQueries(queries);
+      setTopCategories(categories);
+      setTopBrands(brands);
+      setResults(products);
     } catch (err) {
       if (fetchStateRef.current.activeRequests === requestId) {
         console.error("Erro ao buscar autocomplete:", err);
