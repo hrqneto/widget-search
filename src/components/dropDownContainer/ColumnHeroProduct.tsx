@@ -1,10 +1,11 @@
 import React from "react";
-import type { ColumnHeroProductProps } from "../../types";
+import type { ColumnHeroProductProps, BlockConfig } from "../../types";
 
-const ColumnHeroProduct: React.FC<ColumnHeroProductProps> = ({
+const ColumnHeroProduct: React.FC<ColumnHeroProductProps & { blockConfigs: BlockConfig[] }> = ({
   product,
   highlightQuery,
   colors,
+  blockConfigs,
 }) => {
   if (!product) {
     return (
@@ -12,12 +13,14 @@ const ColumnHeroProduct: React.FC<ColumnHeroProductProps> = ({
         Nenhum produto em destaque
       </p>
     );
-  } 
+  }
+
+  const heroTitle = blockConfigs.find(b => b.id === "hero")?.heroName || "Top Product";
 
   return (
     <div className="p-4 pr-11 w-[240px] flex flex-col items-center justify-start text-center">
       <h3 className="font-bold mb-4" style={{ color: colors.headerText }}>
-        Top Product
+        {heroTitle}
       </h3>
 
       <div className="flex flex-col items-center justify-start w-full">
@@ -48,8 +51,9 @@ const ColumnHeroProduct: React.FC<ColumnHeroProductProps> = ({
         </div>
 
         <p className="text-2xl font-bold mt-2" style={{ color: colors.highlight }}>
-          R$ {product.price.toFixed(2)}
+          {typeof product.price === "number" ? `R$ ${product.price.toFixed(2)}` : "Preço indisponível"}
         </p>
+
       </div>
     </div>
   );
