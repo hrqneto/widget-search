@@ -2,6 +2,7 @@ import type { WidgetConfig } from "../types";
 
 export const DEFAULT_CONFIG: WidgetConfig = {
   placeholder: "O que você procura?",
+  blockConfigs: [],
   colors: {
     background: "#770195",
     text: "#000000",
