@@ -1,13 +1,13 @@
-// 📁 src/components/columnLayout/ColumnLayout.tsx
 import React from "react";
 import ColumnTopItems from "../dropDownContainer/ColumnTopItems";
 import ColumnHeroProduct from "../dropDownContainer/ColumnHeroProduct";
 import ColumnProductList from "../dropDownContainer/ColumnProductList";
-import type { LayoutOption, Produto, Colors } from "../../types";
+import type { LayoutOption, Produto, Colors, BlockConfig, } from "../../types";
 import type { ReactNode } from "react";
 
 interface ColumnLayoutProps {
   layout: LayoutOption;
+  blockConfigs: BlockConfig[];
   isMobile: boolean;
   results: Produto[];
   topQueries: string[];
@@ -17,6 +17,7 @@ interface ColumnLayoutProps {
   colors: Colors;
   showBorders?: boolean;
   structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
+  isSuggestion?: boolean;
 }
 
 const shouldRenderBlock = (
@@ -27,6 +28,7 @@ const shouldRenderBlock = (
 };
 
 const ColumnLayout: React.FC<ColumnLayoutProps> = ({
+  blockConfigs,
   results,
   topQueries,
   topCategories,
@@ -35,6 +37,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
   colors,
   showBorders,
   structure,
+  isSuggestion,
 }) => {
   return (
     <div className="grid grid-cols-[210px_210px_1fr] min-h-[540px] gap-4">
@@ -46,6 +49,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
           highlightQuery={highlightQuery}
           colors={colors}
           showBorders={showBorders}
+          blockConfigs={blockConfigs}
         />
       )}
 
@@ -55,6 +59,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
           highlightQuery={highlightQuery}
           colors={colors}
           showBorders={showBorders}
+          blockConfigs={blockConfigs}
         />
       )}
 
@@ -64,6 +69,8 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
           highlightQuery={highlightQuery}
           colors={colors}
           showBorders={showBorders}
+          blockConfigs={blockConfigs}
+          isSuggestion={isSuggestion}
         />
       )}
     </div>
