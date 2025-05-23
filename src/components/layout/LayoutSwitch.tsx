@@ -2,9 +2,9 @@ import React from "react";
 import MobileLayout from "../columnLayout/MobileLayout";
 import LineLayout from "./LineLayout";
 import ColumnLayout from "../columnLayout/ColumnLayout";
-import type { LayoutProps } from "../../types";
+import type { LayoutProps, BlockConfig } from "../../types";
 
-const LayoutSwitch: React.FC<LayoutProps> = ({
+const LayoutSwitch: React.FC<LayoutProps & { blockConfigs: BlockConfig[] }> = ({
   layout,
   isMobile,
   results,
@@ -18,7 +18,8 @@ const LayoutSwitch: React.FC<LayoutProps> = ({
   setQuery,
   setIsOpen,
   placeholder,
-  structure
+  structure,
+  blockConfigs,
 }) => {
   if (layout === "linha") {
     return (
@@ -33,7 +34,7 @@ const LayoutSwitch: React.FC<LayoutProps> = ({
   if (layout === "grid") {
     return (
       <ColumnLayout
-        layout={layout}
+        layout={layout} 
         isMobile={isMobile}
         results={results}
         topQueries={topQueries}
@@ -43,29 +44,30 @@ const LayoutSwitch: React.FC<LayoutProps> = ({
         colors={colors}
         showBorders={showBorders}
         structure={structure}
+        blockConfigs={blockConfigs}
+        isSuggestion={!query || query.length === 0}
       />
-
     );
-  }
+  }  
 
   return (
-  <MobileLayout
-    layout={layout}
-    isMobile={isMobile}
-    results={results}
-    topQueries={topQueries}
-    topCategories={topCategories}
-    topBrands={topBrands}
-    highlightQuery={highlightQuery}
-    colors={colors}
-    showBorders={showBorders}
-    query={query}
-    setQuery={setQuery}
-    setIsOpen={setIsOpen}
-    placeholder={placeholder} // ✅ Adicionado aqui
-    structure={structure}
-  />
-
+    <MobileLayout
+      layout={layout || "destaqueMobile"}
+      isMobile={isMobile}
+      results={results}
+      topQueries={topQueries}
+      topCategories={topCategories}
+      topBrands={topBrands}
+      highlightQuery={highlightQuery}
+      colors={colors}
+      showBorders={showBorders}
+      query={query}
+      setQuery={setQuery}
+      setIsOpen={setIsOpen}
+      placeholder={placeholder}
+      structure={structure}
+      blockConfigs={blockConfigs}
+    />
   );
 };
 
