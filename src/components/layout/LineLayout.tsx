@@ -34,7 +34,7 @@ const LineLayout: React.FC<LineLayoutProps> = ({ results, highlightQuery, colors
               {highlightQuery(product.title)}
             </span>
             <span className="text-sm mt-1" style={{ color: colors.highlight }}>
-              R$ {product.price.toFixed(2)}
+              R$ {product.price.toFixed(1)}
             </span>
           </div>
         </div>
