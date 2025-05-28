@@ -40,6 +40,11 @@ export interface WidgetConfig {
   blockConfigs: []; 
 }
 
+export interface AutocompleteWidgetProps {
+  config: WidgetConfig;
+  showConfigUI?: boolean;
+}
+
 export interface SearchInputProps {
   query: string;
   setQuery: (q: string) => void;
@@ -61,6 +66,7 @@ export interface BlockConfig {
   recommendedSize?: number;
   heroName?: string;
 }
+
 export interface ColumnProductListProps {
   products: Produto[];
   highlightQuery: (text: string) => ReactNode;
