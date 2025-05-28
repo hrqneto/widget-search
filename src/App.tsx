@@ -27,6 +27,7 @@ function App() {
           },
           blockConfigs: []
         }}
+        showConfigUI={false}
       />
     </div>
   );

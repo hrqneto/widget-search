@@ -25,6 +25,11 @@ interface BlockConfig {
   heroName?: string;
 }
 
+interface AutocompleteWidgetProps {
+  config: WidgetConfig;
+  showConfigUI?: boolean;
+}
+
 const defaultBlockConfigs: BlockConfig[] = [
   { id: "hero", enabled: true, position: 0, name: "Top product", size: 1, heroName: "Top product" },
   { id: "products", enabled: true, position: 1, name: "Products", size: 7 },
@@ -33,7 +38,8 @@ const defaultBlockConfigs: BlockConfig[] = [
   { id: "brands", enabled: true, position: 4, name: "Brands", size: 5, recommendedName: "Top brands", recommendedSize: 5 },
 ];
 
-const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }) => {
+const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: AutocompleteWidgetProps) => {
+  console.log("AutocompleteWidget showConfigUI:", showConfigUI);
   const {
     query, setQuery, results, setResults,
     isLoading, setIsLoading, isOpen, setIsOpen,
@@ -73,7 +79,7 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     } else {
       debouncedFetchAutocomplete(query);
     }
-  }, [query]);
+  }, [query, fetchInitialSuggestions, debouncedFetchAutocomplete, setIsOpen]);  
 
   useEffect(() => {
     if (!inputRef.current || !dropdownRef.current) return;
@@ -99,10 +105,11 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
     <WidgetConfigContext.Provider value={{ ...internalConfig }}>
       <div className="relative w-full max-w-full mx-auto mt-4">
         <div className={isMobile && isOpen ? "hidden" : "block"}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 text-sm p-2 bg-gray-50 rounded">
-            {blockConfigs.map(block => (
-              <div key={block.id} className="border p-2 rounded bg-white shadow-sm">
-                <div className="flex items-center justify-between">
+          {showConfigUI && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3 text-sm p-2 bg-gray-50 rounded">
+              {blockConfigs.map(block => (
+                <div key={block.id} className="border p-2 rounded bg-white shadow-sm">
+                  <div className="flex items-center justify-between">
                   <label className="font-semibold capitalize">{block.id}</label>
                   <input
                     type="checkbox"
@@ -138,6 +145,7 @@ const AutocompleteWidget = ({ config: externalConfig }: { config: WidgetConfig }
               </label>
             </div>
           </div>
+          )}
 
           <SearchInput
             inputRef={inputRef}
