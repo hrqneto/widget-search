@@ -142,3 +142,25 @@ export interface SuggestionResponse {
 export interface SearchResults {
   resultados: Produto[];
 }
+
+export interface BuscaflexPreviewConfig {
+  clientId: string;
+  placeholder: string;
+  layout?: "heromobile" | "line" | "grid";
+  alignment?: "left" | "center" | "right";
+  blockPosition?: "left" | "right";
+  apiBaseUrl?: string;
+  fixarAberto?: boolean;
+  colors: {
+    main: string;
+    background: string;
+    highlight: string;
+    text: string;
+    border?: string;
+    headerText?: string;
+    mutedText?: string;
+    noResultsText?: string;
+    hoverItem?: string;
+  };
+  blockConfigs: BlockConfig[];
+}

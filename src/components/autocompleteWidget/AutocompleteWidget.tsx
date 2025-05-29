@@ -37,13 +37,23 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   const isMobile = useIsMobile(1020);
 
   const [fixarAberto, setFixarAberto] = useState(true);
-  const [blockConfigs, setBlockConfigs] = useState<BlockConfig[]>(() => {
+
+  const [blockConfigs, setBlockConfigs] = useState<BlockConfig[]>(defaultBlockConfigs);
+
+  useEffect(() => {
     if (typeof window !== "undefined" && window.BUSCAFLEX_PREVIEW) {
-      const previewConfig = window.BUSCAFLEX_CONFIG;
-      return previewConfig?.blockConfigs || defaultBlockConfigs;
+      const interval = setInterval(() => {
+        const config = window.BUSCAFLEX_CONFIG;
+        if (config?.blockConfigs) {
+          setBlockConfigs(config.blockConfigs);
+          clearInterval(interval);
+        }
+      }, 50);
+
+      return () => clearInterval(interval);
     }
-    return defaultBlockConfigs;
-  });
+  }, []);
+
   
   const structure = blockConfigs.filter(b => b.enabled).map(b => b.id);
   const [caretLeftOffset, setCaretLeftOffset] = useState(0);
