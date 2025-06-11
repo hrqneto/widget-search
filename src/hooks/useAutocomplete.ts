@@ -20,6 +20,7 @@ export function useAutocomplete(
     if (fetchStateRef.current.hasFetchedInitialSuggestions) return;
 
     setIsLoading(true);
+    
     try {
       const res = await fetch(
         `http://localhost:8085/api/autocomplete/suggestions?client_id=${clientId}`
