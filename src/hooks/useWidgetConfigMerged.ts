@@ -20,6 +20,9 @@ export function useWidgetConfigMerged(externalConfig: WidgetConfig): WidgetConfi
   return {
     ...DEFAULT_CONFIG,
     ...externalConfig,
+    blockConfigs: Array.isArray(externalConfig.blockConfigs)
+      ? externalConfig.blockConfigs
+      : DEFAULT_CONFIG.blockConfigs,
     colors: mergedColors,
   };
 }
