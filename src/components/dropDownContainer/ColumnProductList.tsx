@@ -18,8 +18,16 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
   blockConfigs,
   isSuggestion,
 }) => {
-  const productList = products.slice(1, 7);
-  const title = blockConfigs.find(b => b.id === "products")?.name || "Top Products";
+
+  console.log("Produtos recebidos:", products);
+
+  const config = blockConfigs.find(b => b.id === "products");
+  const limit = isSuggestion ? config?.limitRecommend : config?.limit;
+  const productList = products.slice(1, limit ?? 7);
+  const title =
+  isSuggestion
+    ? config?.titleRecommend || config?.name || "Produtos"
+    : config?.title || config?.name || "Produtos";
 
   if (productList.length === 0) {
     return (
@@ -73,15 +81,11 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
                   <p className="text-sm line-clamp-2 overflow-hidden break-words mt-1" style={{ color: colors.mutedText }}>
                     {highlightQuery(product.category)}
                   </p>
-                  {typeof product.price === "number" ? (
-                    <p className="font-bold text-sm mt-1" style={{ color: colors.highlight }}>
-                      R$ {product.price.toFixed(1)}
-                    </p>
-                  ) : (
-                    <p className="text-sm mt-1" style={{ color: colors.mutedText }}>
-                      Preço indisponível
-                    </p>
-                  )}
+                  <p className="text-sm mt-1" style={{ color: colors.highlight }}>
+                    {product.priceText
+                      ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}`
+                      : "Preço indisponível"}
+                  </p>
                 </div>
               </div>
             );
