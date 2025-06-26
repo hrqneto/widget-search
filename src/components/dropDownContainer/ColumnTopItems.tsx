@@ -9,10 +9,13 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps & { blockConfigs: BlockConfig
   colors,
   showBorders,
   blockConfigs,
+  isSuggestion
   
 }) => {
-  const getTitle = (id: BlockConfig["id"]) =>
-    blockConfigs.find(b => b.id === id)?.recommendedName || id;
+  const getTitle = (id: BlockConfig["id"]) => { 
+    const block = blockConfigs.find(b => b.id === id);
+return isSuggestion ? block?.titleRecommend || id : block?.title || id;
+  };  
 
   return (
     <div
