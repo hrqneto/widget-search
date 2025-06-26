@@ -51,9 +51,10 @@ const ColumnHeroProduct: React.FC<ColumnHeroProductProps & { blockConfigs: Block
         </div>
 
         <p className="text-2xl font-bold mt-2" style={{ color: colors.highlight }}>
-          {typeof product.price === "number" ? `R$ ${product.price.toFixed(2)}` : "Preço indisponível"}
+          {product.priceText
+            ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}`
+            : "Preço indisponível"}
         </p>
-
       </div>
     </div>
   );
