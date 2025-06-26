@@ -8,6 +8,7 @@ export interface Produto {
   brand: string;
   image?: string;
   url?: string;
+  priceText?: string;
 }
 
 export interface Colors {
@@ -55,13 +56,16 @@ export interface SearchInputProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-// em types/index.ts ou types/widget.ts
 export interface BlockConfig {
   id: "hero" | "products" | "categories" | "brands" | "queries";
   enabled: boolean;
   position: number;
   name: string;
   size: number;
+  title?: string;
+  titleRecommend?: string;
+  limit?: number;
+  limitRecommend?: number;
   recommendedName?: string;
   recommendedSize?: number;
   heroName?: string;
@@ -75,24 +79,27 @@ export interface ColumnProductListProps {
   blockConfigs: BlockConfig[];
   isSuggestion?: boolean;
 }
-
 export interface ColumnTopItemsProps {
   topQueries: string[] | { query: string }[];
   topCategories: string[];
   topBrands: string[];
-  highlightQuery: (text: string) => ReactNode;
-  colors: Colors;
-  showBorders?: boolean;
-  blockConfigs: BlockConfig[];
+  highlightQuery: (text: string) => React.ReactNode;
+  colors: {
+    text: string;
+    mutedText: string;
+    headerText: string;
+    highlight: string;
+    border: string;
+  };
+    showBorders: boolean;
+  isSuggestion?: boolean;
 }
-
 export interface ColumnHeroProductProps {
   product?: Produto;
   highlightQuery: (text: string) => ReactNode;
   colors: Colors;
   showBorders?: boolean;
 }
-
 export interface MobileLayoutProps {
   layout: LayoutOption;
   isMobile: boolean;
@@ -110,7 +117,6 @@ export interface MobileLayoutProps {
   structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
   blockConfigs: BlockConfig[];
 }
-
 export interface LayoutProps {
   layout?: LayoutOption;
   isMobile: boolean;
