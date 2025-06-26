@@ -37,7 +37,11 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   const previewConfig = typeof window !== "undefined" && window.BUSCAFLEX_PREVIEW ? window.BUSCAFLEX_CONFIG : null;
   const internalConfig = useWidgetConfigMerged((previewConfig || externalConfig) as WidgetConfig);
   const clientId = previewConfig?.clientId || externalConfig.clientId || "products";
-  const structure = blockConfigs.filter(b => b.enabled).map(b => b.id);
+  const   sortedBlockConfigs = [...blockConfigs]
+  .filter((b) => b.enabled)
+  .sort((a, b) => a.position - b.position);
+
+const structure = sortedBlockConfigs.map((b) => b.id);
   const isMobile = useIsMobile(1020);
 
   const {
@@ -132,7 +136,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
                     setIsOpen={setIsOpen}
                     placeholder={internalConfig.placeholder || ""}
                     structure={structure}
-                    blockConfigs={blockConfigs}
+                    blockConfigs={sortedBlockConfigs}
                   />
                 ) : (
                   <LayoutSwitch
