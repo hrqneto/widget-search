@@ -12,33 +12,55 @@ export interface Produto {
 }
 
 export interface Colors {
-  main?: string;
-  highlight?: string;
-  background?: string;
-  text?: string;
-  mutedText?: string;
-  headerText?: string;
-  border?: string;
-  noResultsText?: string;
-  hoverItem?: string;
+  main: string;
+  highlight: string;
+  background: string;
+  text: string;
+  mutedText: string;
+  headerText: string;
+  border: string;
+  noResultsText: string;
+  hoverItem: string;
 }
 
 export type LayoutOption = "destaqueMobile" | "linha" | "grid";
 
+export type BlockId = "hero" | "products" | "categories" | "brands" | "queries";
+
+export interface BlockConfig {
+  id: "hero" | "products" | "categories" | "brands" | "queries";
+  enabled: boolean;
+  position: number;
+
+  // manter todos esses campos porque estão sendo usados
+  name?: string;                  // usado no defaultConfig
+  size?: number;                 // usado no defaultConfig
+  title?: string;                // usado nos components novos
+  titleRecommend?: string;
+  limit?: number;
+  limitRecommend?: number;
+  recommendedName?: string;
+  recommendedSize?: number;
+  heroName?: string;
+}
+
 export interface WidgetConfig {
-  clientId?: string;
-  placeholder?: string;
-  structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
-  layout?: LayoutOption;
-  alignment?: "left" | "center" | "right";
-  blockPosition?: "left" | "right";
-  showHeroProduct?: boolean;
-  showSuggestions?: boolean;
-  showBorders?: boolean;
+  clientId: string;
+  placeholder: string;
+  layout: LayoutOption;
+  alignment: "left" | "center" | "right";
+  blockPosition: "left" | "right";
+  showHeroProduct: boolean;
+  showSuggestions: boolean;
+  showBorders: boolean;
   apiBaseUrl?: string;
   selector?: string;
-  colors?: Colors;
-  blockConfigs: []; 
+  colors: Colors;
+  blockConfigs: BlockConfig[];
+}
+
+export interface BuscaflexPreviewConfig extends Partial<WidgetConfig> {
+  fixarAberto?: boolean;
 }
 
 export interface AutocompleteWidgetProps {
@@ -56,21 +78,6 @@ export interface SearchInputProps {
   inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
-export interface BlockConfig {
-  id: "hero" | "products" | "categories" | "brands" | "queries";
-  enabled: boolean;
-  position: number;
-  name: string;
-  size: number;
-  title?: string;
-  titleRecommend?: string;
-  limit?: number;
-  limitRecommend?: number;
-  recommendedName?: string;
-  recommendedSize?: number;
-  heroName?: string;
-}
-
 export interface ColumnProductListProps {
   products: Produto[];
   highlightQuery: (text: string) => ReactNode;
@@ -79,44 +86,24 @@ export interface ColumnProductListProps {
   blockConfigs: BlockConfig[];
   isSuggestion?: boolean;
 }
+
 export interface ColumnTopItemsProps {
   topQueries: string[] | { query: string }[];
   topCategories: string[];
   topBrands: string[];
   highlightQuery: (text: string) => React.ReactNode;
-  colors: {
-    text: string;
-    mutedText: string;
-    headerText: string;
-    highlight: string;
-    border: string;
-  };
-    showBorders: boolean;
+  colors: Pick<Colors, "text" | "mutedText" | "headerText" | "highlight" | "border">;
+  showBorders: boolean;
   isSuggestion?: boolean;
 }
+
 export interface ColumnHeroProductProps {
   product?: Produto;
   highlightQuery: (text: string) => ReactNode;
   colors: Colors;
   showBorders?: boolean;
 }
-export interface MobileLayoutProps {
-  layout: LayoutOption;
-  isMobile: boolean;
-  results: Produto[];
-  topQueries: string[];
-  topCategories: string[];
-  topBrands: string[];
-  highlightQuery: (text: string) => ReactNode;
-  colors: Colors;
-  showBorders?: boolean;
-  query: string;
-  setQuery: (value: string) => void;
-  setIsOpen: (value: boolean) => void;
-  placeholder: string;
-  structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
-  blockConfigs: BlockConfig[];
-}
+
 export interface LayoutProps {
   layout?: LayoutOption;
   isMobile: boolean;
@@ -131,7 +118,11 @@ export interface LayoutProps {
   setQuery: (value: string) => void;
   setIsOpen: (value: boolean) => void;
   placeholder: string;
-  structure?: ("hero" | "brands" | "categories" | "products" | "queries")[];
+  structure?: BlockId[];
+}
+
+export interface MobileLayoutProps extends LayoutProps {
+  blockConfigs: BlockConfig[];
 }
 
 export interface SuggestionResponse {
@@ -147,26 +138,4 @@ export interface SuggestionResponse {
 
 export interface SearchResults {
   resultados: Produto[];
-}
-
-export interface BuscaflexPreviewConfig {
-  clientId: string;
-  placeholder: string;
-  layout?: "heromobile" | "line" | "grid";
-  alignment?: "left" | "center" | "right";
-  blockPosition?: "left" | "right";
-  apiBaseUrl?: string;
-  fixarAberto?: boolean;
-  colors: {
-    main: string;
-    background: string;
-    highlight: string;
-    text: string;
-    border?: string;
-    headerText?: string;
-    mutedText?: string;
-    noResultsText?: string;
-    hoverItem?: string;
-  };
-  blockConfigs: BlockConfig[];
 }

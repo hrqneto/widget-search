@@ -1,17 +1,28 @@
 import type { WidgetConfig } from "../types";
 
+import { getDefaultBlockConfigs } from "../utils/defaultBlockConfigs";
+
 export const DEFAULT_CONFIG: WidgetConfig = {
-  placeholder: "O que você procura?",
-  blockConfigs: [],
+  clientId: "demo",
+  placeholder: "Busque aqui...",
+  layout: "grid",
+  alignment: "left",
+  blockPosition: "right",
+  showHeroProduct: true,
+  showSuggestions: true,
+  showBorders: false,
+  apiBaseUrl: "https://api.buscoo.com",
+  selector: "#buscoo-autocomplete",
   colors: {
-    background: "#770195",
-    text: "#000000",
-    main: "#770195",
-    highlight: "#EC46D8",
-    border: "#E5E7EB",
-    headerText: "#770195",
-    mutedText: "#484848",
-    noResultsText: "#000000",
-    hoverItem: "#EC46D8",
+    main: "#000",
+    highlight: "#f00",
+    background: "#fff",
+    text: "#333",
+    mutedText: "#888",
+    headerText: "#111",
+    border: "#ddd",
+    noResultsText: "#c00",
+    hoverItem: "#eee",
   },
+  blockConfigs: getDefaultBlockConfigs(),
 };

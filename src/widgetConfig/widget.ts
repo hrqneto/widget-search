@@ -1,7 +1,22 @@
-// 📁 src/widgetConfig/widget.ts
 import { renderWidget, WRAPPER_ID } from "./renderWidget";
 import "../output.css";
-import type { WidgetConfig } from "../types";
+import type { WidgetConfig, BlockConfig } from "../types";
+
+// 🔧 Função local para normalizar blockConfigs do window
+function normalizeBlockConfigs(rawBlocks: any[] = []): BlockConfig[] {
+  return rawBlocks
+    .filter((block) => block && block.enabled !== false)
+    .map((block, index) => ({
+      id: block.type === "pages" ? "brands" : block.type || `block-${index}`,
+      name: block.title || "",
+      size: typeof block.limit === "number" ? block.limit : 4,
+      position: typeof block.position === "number" ? block.position : index,
+      enabled: block.enabled ?? true,
+      recommendedName: block.titleRecommend || "",
+      recommendedSize: typeof block.limitRecommend === "number" ? block.limitRecommend : 4,
+      heroName: block.heroTitle || "",
+    }));
+}
 
 // ✅ 1. Função segura pra extrair config do window
 function getWidgetConfig(): WidgetConfig {
@@ -28,7 +43,7 @@ function getWidgetConfig(): WidgetConfig {
       noResultsText: raw?.colors?.noResultsText || "#222222",
       hoverItem: raw?.colors?.hoverItem || "#eeeeee",
     },
-    blockConfigs: Array.isArray(raw?.blockConfigs) ? raw.blockConfigs : [],
+    blockConfigs: normalizeBlockConfigs(raw?.blockConfigs),
   };
 }
 

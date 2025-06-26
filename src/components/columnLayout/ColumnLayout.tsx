@@ -2,7 +2,7 @@ import React from "react";
 import ColumnTopItems from "../dropDownContainer/ColumnTopItems";
 import ColumnHeroProduct from "../dropDownContainer/ColumnHeroProduct";
 import ColumnProductList from "../dropDownContainer/ColumnProductList";
-import type { LayoutOption, Produto, Colors, BlockConfig, } from "../../types";
+import type { LayoutOption, Produto, Colors, BlockConfig } from "../../types";
 import type { ReactNode } from "react";
 
 interface ColumnLayoutProps {
@@ -47,13 +47,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
           topBrands={topBrands}
           topQueries={topQueries}
           highlightQuery={highlightQuery}
-          colors={{
-            text: colors.text ?? "#000000",
-            mutedText: colors.mutedText ?? "#999999",
-            headerText: colors.headerText ?? "#333333",
-            highlight: colors.highlight ?? "#EC46D8",
-            border: colors.border ?? "#dddddd"
-          }}
+          colors={colors}
           showBorders={!!showBorders}
           blockConfigs={blockConfigs}
           isSuggestion={true}
@@ -64,13 +58,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
         <ColumnHeroProduct
           product={results[0]}
           highlightQuery={highlightQuery}
-          colors={{
-            text: colors.text ?? "#000000",
-            mutedText: colors.mutedText ?? "#999999",
-            headerText: colors.headerText ?? "#333333",
-            highlight: colors.highlight ?? "#EC46D8",
-            border: colors.border ?? "#dddddd"
-          }}
+          colors={colors}
           showBorders={showBorders}
           blockConfigs={blockConfigs}
         />
@@ -80,13 +68,7 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
         <ColumnProductList
           products={results}
           highlightQuery={highlightQuery}
-          colors={{
-            text: colors.text ?? "#000000",
-            mutedText: colors.mutedText ?? "#999999",
-            headerText: colors.headerText ?? "#333333",
-            highlight: colors.highlight ?? "#EC46D8",
-            border: colors.border ?? "#dddddd"
-          }}
+          colors={colors}
           showBorders={showBorders}
           blockConfigs={blockConfigs}
           isSuggestion={isSuggestion}
