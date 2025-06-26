@@ -47,9 +47,16 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
           topBrands={topBrands}
           topQueries={topQueries}
           highlightQuery={highlightQuery}
-          colors={colors}
-          showBorders={showBorders}
+          colors={{
+            text: colors.text ?? "#000000",
+            mutedText: colors.mutedText ?? "#999999",
+            headerText: colors.headerText ?? "#333333",
+            highlight: colors.highlight ?? "#EC46D8",
+            border: colors.border ?? "#dddddd"
+          }}
+          showBorders={!!showBorders}
           blockConfigs={blockConfigs}
+          isSuggestion={true}
         />
       )}
 
@@ -57,7 +64,13 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
         <ColumnHeroProduct
           product={results[0]}
           highlightQuery={highlightQuery}
-          colors={colors}
+          colors={{
+            text: colors.text ?? "#000000",
+            mutedText: colors.mutedText ?? "#999999",
+            headerText: colors.headerText ?? "#333333",
+            highlight: colors.highlight ?? "#EC46D8",
+            border: colors.border ?? "#dddddd"
+          }}
           showBorders={showBorders}
           blockConfigs={blockConfigs}
         />
@@ -67,7 +80,13 @@ const ColumnLayout: React.FC<ColumnLayoutProps> = ({
         <ColumnProductList
           products={results}
           highlightQuery={highlightQuery}
-          colors={colors}
+          colors={{
+            text: colors.text ?? "#000000",
+            mutedText: colors.mutedText ?? "#999999",
+            headerText: colors.headerText ?? "#333333",
+            highlight: colors.highlight ?? "#EC46D8",
+            border: colors.border ?? "#dddddd"
+          }}
           showBorders={showBorders}
           blockConfigs={blockConfigs}
           isSuggestion={isSuggestion}

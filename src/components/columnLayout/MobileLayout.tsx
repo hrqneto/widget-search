@@ -124,7 +124,13 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             topCategories={topCategories}
             topBrands={[]}
             highlightQuery={highlightQuery}
-            colors={colors}
+            colors={{
+              text: colors.text ?? "#000000",
+              mutedText: colors.mutedText ?? "#999999",
+              headerText: colors.headerText ?? "#333333",
+              highlight: colors.highlight ?? "#EC46D8",
+              border: colors.border ?? "#dddddd"
+            }}
             showBorders={showBorders}
             blockConfigs={blockConfigs}
           />
@@ -138,7 +144,13 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
             topCategories={[]}
             topBrands={topBrands}
             highlightQuery={highlightQuery}
-            colors={colors}
+            colors={{
+              text: colors.text ?? "#000000",
+              mutedText: colors.mutedText ?? "#999999",
+              headerText: colors.headerText ?? "#333333",
+              highlight: colors.highlight ?? "#EC46D8",
+              border: colors.border ?? "#dddddd"
+            }}
             showBorders={showBorders}
             blockConfigs={blockConfigs}
           />
