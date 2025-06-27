@@ -7,14 +7,14 @@ function normalizeBlockConfigs(rawBlocks: any[] = []): BlockConfig[] {
   return rawBlocks
     .filter((block) => block && block.enabled !== false)
     .map((block, index) => ({
-      id: block.type === "pages" ? "brands" : block.type || `block-${index}`,
-      name: block.title || "",
-      size: typeof block.limit === "number" ? block.limit : 4,
+      id: block.id || `block-${index}`,
+      name: block.name || "",
+      size: typeof block.size === "number" ? block.size : 4,
       position: typeof block.position === "number" ? block.position : index,
       enabled: block.enabled ?? true,
-      recommendedName: block.titleRecommend || "",
-      recommendedSize: typeof block.limitRecommend === "number" ? block.limitRecommend : 4,
-      heroName: block.heroTitle || "",
+      recommendedName: block.recommendedName || "",
+      recommendedSize: typeof block.recommendedSize === "number" ? block.recommendedSize : 4,
+      heroName: block.heroName || "",
     }));
 }
 
