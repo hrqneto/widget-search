@@ -15,7 +15,7 @@ const ColumnHeroProduct: React.FC<ColumnHeroProductProps & { blockConfigs: Block
     );
   }
 
-  const heroTitle = blockConfigs.find(b => b.id === "hero")?.heroName || "Top Product";
+  const heroTitle = blockConfigs.find(b => b.id === "hero")?.heroName || "Produto em destaque";
 
   return (
     <div className="p-4 pr-11 w-[240px] flex flex-col items-center justify-start text-center">
