@@ -34,7 +34,13 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dropdownLeftOffset, setDropdownLeftOffset] = useState<number>(0);
   const highlightQuery = (text: string) => baseHighlightQuery(text, query);
-  const previewConfig = typeof window !== "undefined" && window.BUSCAFLEX_PREVIEW ? window.BUSCAFLEX_CONFIG : null;
+
+  const previewConfig =
+  typeof window !== "undefined" && window.BUSCAFLEX_CONFIG
+    ? window.BUSCAFLEX_CONFIG
+    : null;
+
+  
   const internalConfig = useWidgetConfigMerged((previewConfig || externalConfig) as WidgetConfig);
   const clientId = previewConfig?.clientId || externalConfig.clientId || "products";
   const   sortedBlockConfigs = [...blockConfigs]
