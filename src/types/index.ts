@@ -28,21 +28,25 @@ export type LayoutOption = "destaqueMobile" | "linha" | "grid";
 export type BlockId = "hero" | "products" | "categories" | "brands" | "queries";
 
 export interface BlockConfig {
-  id: "hero" | "products" | "categories" | "brands" | "queries";
+  id: "products" | "queries" | "categories" | "brands" | "hero";
   enabled: boolean;
   position: number;
 
-  // manter todos esses campos porque estão sendo usados
-  name?: string;                  // usado no defaultConfig
-  size?: number;                 // usado no defaultConfig
-  title?: string;                // usado nos components novos
-  titleRecommend?: string;
+  // usados no widget para exibir os títulos
+  title?: string;
+  recommendedName?: string;
+  heroName?: string;
+
+  // usados para tamanho das listas
+  size?: number;
+  recommendedSize?: number;
   limit?: number;
   limitRecommend?: number;
-  recommendedName?: string;
-  recommendedSize?: number;
-  heroName?: string;
+
+  // (antigo, mas ainda pode estar em uso em algum lugar)
+  name?: string;
 }
+
 
 export interface WidgetConfig {
   clientId: string;
