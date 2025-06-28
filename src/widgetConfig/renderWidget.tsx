@@ -14,6 +14,7 @@ export function renderWidget(config: WidgetConfig, container: HTMLElement) {
   const wrapper = document.createElement("div");
   wrapper.id = WRAPPER_ID;
   container.replaceWith(wrapper);
+  console.log("🔥 CONFIG FINAL RECEBIDO NO renderWidget:", config);
 
   const root = createRoot(wrapper);
   root.render(<AutocompleteWidget config={config} />);

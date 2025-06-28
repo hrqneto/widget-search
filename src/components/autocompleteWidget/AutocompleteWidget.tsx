@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import SearchInput from "../searchInput/SearchInput";
 import LayoutSwitch from "../layout/LayoutSwitch";
 import MobileLayout from "../columnLayout/MobileLayout";
@@ -34,21 +34,34 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [dropdownLeftOffset, setDropdownLeftOffset] = useState<number>(0);
   const highlightQuery = (text: string) => baseHighlightQuery(text, query);
+  const isMobile = useIsMobile(1020);
 
   const previewConfig =
-  typeof window !== "undefined" && window.BUSCAFLEX_CONFIG
-    ? window.BUSCAFLEX_CONFIG
-    : null;
+    typeof window !== "undefined" && window.BUSCAFLEX_CONFIG
+      ? window.BUSCAFLEX_CONFIG
+      : null;
 
-  
+  console.log("🟡 previewConfig =", previewConfig);
+
   const internalConfig = useWidgetConfigMerged((previewConfig || externalConfig) as WidgetConfig);
   const clientId = previewConfig?.clientId || externalConfig.clientId || "products";
-  const   sortedBlockConfigs = [...blockConfigs]
-  .filter((b) => b.enabled)
-  .sort((a, b) => a.position - b.position);
 
-const structure = sortedBlockConfigs.map((b) => b.id);
-  const isMobile = useIsMobile(1020);
+  useEffect(() => {
+    if (previewConfig?.blockConfigs?.length) {
+      console.log("🟢 Aplicando blockConfigs vindos do previewConfig:", previewConfig.blockConfigs);
+      setBlockConfigs(previewConfig.blockConfigs);
+    } else {
+      console.log("🔴 Nenhum blockConfig válido no previewConfig");
+    }
+  }, [previewConfig]);
+
+  const sortedBlockConfigs = [...blockConfigs]
+    .filter((b) => b.enabled)
+    .sort((a, b) => a.position - b.position);
+
+  console.log("🧩 blockConfigs dentro do AutocompleteWidget:", blockConfigs);
+
+  const structure = sortedBlockConfigs.map((b) => b.id);
 
   const {
     fetchInitialSuggestions,
@@ -57,6 +70,7 @@ const structure = sortedBlockConfigs.map((b) => b.id);
   } = useAutocomplete(
     clientId, setTopQueries, setTopCategories, setTopBrands, setResults, setIsLoading
   );
+
   const updateBlock = useBlockUpdater(setBlockConfigs);
 
   useHandleQueryChange(query, fetchInitialSuggestions, debouncedFetchAutocomplete, setIsOpen);
@@ -160,7 +174,7 @@ const structure = sortedBlockConfigs.map((b) => b.id);
                     setIsOpen={setIsOpen}
                     placeholder={internalConfig.placeholder || ""}
                     structure={structure}
-                    blockConfigs={blockConfigs}
+                    blockConfigs={sortedBlockConfigs}
                   />
                 )
               ) : (
