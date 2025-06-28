@@ -1,3 +1,4 @@
+// ColumnHeroProduct.tsx
 import React from "react";
 import type { ColumnHeroProductProps, BlockConfig } from "../../types";
 
@@ -31,29 +32,20 @@ const ColumnHeroProduct: React.FC<ColumnHeroProductProps & { blockConfigs: Block
           className="mx-auto"
         >
           <img
-            src={
-              product.image?.startsWith("http")
-                ? product.image
-                : "https://via.placeholder.com/150?text=Ver"
-            }
+            src={product.image?.startsWith("http") ? product.image : "https://via.placeholder.com/150?text=Ver"}
             alt={product.title}
             className="w-[260px] h-[260px] object-cover rounded-md mx-auto"
           />
         </a>
 
         <div className="w-full mt-4 px-2 overflow-hidden">
-          <p
-            className="text-base font-semibold leading-snug line-clamp-3 break-words"
-            style={{ color: colors.text }}
-          >
+          <p className="text-base font-semibold leading-snug line-clamp-3 break-words" style={{ color: colors.text }}>
             {highlightQuery(product.title)}
           </p>
         </div>
 
         <p className="text-2xl font-bold mt-2" style={{ color: colors.highlight }}>
-          {product.priceText
-            ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}`
-            : "Preço indisponível"}
+          {product.priceText ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}` : "Preço indisponível"}
         </p>
       </div>
     </div>

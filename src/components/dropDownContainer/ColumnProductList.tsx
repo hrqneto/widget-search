@@ -1,3 +1,4 @@
+// ColumnProductList.tsx
 import React from "react";
 import type { Produto, Colors, BlockConfig } from "../../types";
 
@@ -18,15 +19,12 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
   blockConfigs,
   isSuggestion,
 }) => {
-
-  console.log("Produtos recebidos:", products);
-
   const config = blockConfigs.find(b => b.id === "products");
   const limit = isSuggestion ? config?.limitRecommend : config?.limit;
   const productList = products.slice(1, limit ?? 7);
   const title = isSuggestion
-  ? config?.recommendedName || config?.title || "Produtos"
-  : config?.title || "Produtos";
+    ? config?.recommendedName || config?.title || "Produtos"
+    : config?.title || "Produtos";
 
   if (productList.length === 0) {
     return (
@@ -39,9 +37,7 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
   return (
     <div
       className="p-4 col-span-1 flex-1 flex flex-col justify-between"
-      style={{
-        borderLeft: showBorders ? `1px solid ${colors.border}` : undefined,
-      }}
+      style={{ borderLeft: showBorders ? `1px solid ${colors.border}` : undefined }}
     >
       <div>
         <h3 className="font-bold mb-4" style={{ color: colors.headerText }}>
@@ -81,9 +77,7 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
                     {highlightQuery(product.category)}
                   </p>
                   <p className="text-sm mt-1" style={{ color: colors.highlight }}>
-                    {product.priceText
-                      ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}`
-                      : "Preço indisponível"}
+                    {product.priceText ? `R$ ${product.priceText.replace(/[^\d.,]/g, "")}` : "Preço indisponível"}
                   </p>
                 </div>
               </div>
@@ -94,9 +88,7 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
 
       {productList.length > 0 && !isSuggestion && (
         <div className="mt-6 flex justify-center">
-          <button
-            className="bg-transparent border border-black text-black py-3 px-6 text-sm w-full font-semibold rounded-md hover:bg-black hover:text-white transition"
-          >
+          <button className="bg-transparent border border-black text-black py-3 px-6 text-sm w-full font-semibold rounded-md hover:bg-black hover:text-white transition">
             VER TODOS OS PRODUTOS
           </button>
         </div>

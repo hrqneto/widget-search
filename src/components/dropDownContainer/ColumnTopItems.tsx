@@ -1,3 +1,4 @@
+// ColumnTopItems.tsx
 import React from "react";
 import type { ColumnTopItemsProps, BlockConfig } from "../../types";
 
@@ -9,26 +10,21 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps & { blockConfigs: BlockConfig
   colors,
   showBorders,
   blockConfigs,
-  isSuggestion
-  
+  isSuggestion,
 }) => {
   const getTitle = (id: BlockConfig["id"]) => {
     const block = blockConfigs.find(b => b.id === id);
     return isSuggestion ? block?.recommendedName || id : block?.title || id;
-  };  
+  };
 
   return (
     <div
       className="relative w-full min-w-[200px] max-w-[300px]"
-      style={{
-        borderLeft: showBorders ? `1px solid ${colors.border}` : undefined,
-      }}
+      style={{ borderLeft: showBorders ? `1px solid ${colors.border}` : undefined }}
     >
       <div
         className="absolute inset-0 z-0 h-full w-full rounded-l-lg"
-        style={{
-          backgroundColor: colors.highlight ? `${colors.highlight}12` : "rgba(0,0,0,0.1)",
-        }}
+        style={{ backgroundColor: colors.highlight ? `${colors.highlight}12` : "rgba(0,0,0,0.1)" }}
       />
 
       <div className="relative z-10 px-4 py-4 w-full">
@@ -47,33 +43,19 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps & { blockConfigs: BlockConfig
               </span>
             ))
           ) : (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {topQueries.length > 0 ? (
-                topQueries.slice(0, 3).map((item, index) => (
-                  <span
-                    key={index}
-                    className="bg-red-600 text-white px-2 py-1 text-sm rounded"
-                  >
-                    {highlightQuery(typeof item === 'string' ? item : item.query)}
-                  </span>
-                ))
-              ) : (
-                <>
-                  <p className="text-sm mb-2 font-semibold" style={{ color: colors.headerText }}>
-                    Buscas populares
-                  </p>
-                  {["camisa", "tênis", "mochila"].map((item, index) => (
-                    <span
-                      key={index}
-                      className="bg-red-600 text-white px-2 py-1 text-sm rounded"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </>
-              )}
-            </div>
-
+            <>
+              <p className="text-sm mb-2 font-semibold" style={{ color: colors.headerText }}>
+                Buscas populares
+              </p>
+              {["camisa", "tênis", "mochila"].map((item, index) => (
+                <span
+                  key={index}
+                  className="bg-red-600 text-white px-2 py-1 text-sm rounded"
+                >
+                  {item}
+                </span>
+              ))}
+            </>
           )}
         </div>
 
