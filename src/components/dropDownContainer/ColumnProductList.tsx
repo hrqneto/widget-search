@@ -25,8 +25,8 @@ const ColumnProductList: React.FC<ColumnProductListProps> = ({
   const limit = isSuggestion ? config?.limitRecommend : config?.limit;
   const productList = products.slice(1, limit ?? 7);
   const title = isSuggestion
-  ? config?.recommendedName || config?.name || "Produtos"
-  : config?.name || "Produtos";
+  ? config?.recommendedName || config?.title || "Produtos"
+  : config?.title || "Produtos";
 
   if (productList.length === 0) {
     return (

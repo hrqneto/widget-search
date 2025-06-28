@@ -16,12 +16,13 @@ export function useWidgetConfigMerged(externalConfig: Partial<WidgetConfig>): Wi
     hoverItem: externalConfig.colors?.hoverItem ?? defaultColors.hoverItem,
   };
 
+  //TODO analizar as dependencias dos 'block.name' e descontinua-los
   const mergedBlockConfigs: BlockConfig[] =
     Array.isArray(externalConfig.blockConfigs) && externalConfig.blockConfigs.length > 0
       ? externalConfig.blockConfigs
           .map((block) => ({
             id: block.id,
-            name: block.name ?? "",
+            title: block.title ?? block.name ?? "",
             size: typeof block.size === "number" ? block.size : 4,
             position: typeof block.position === "number" ? block.position : 0,
             enabled: block.enabled ?? true,

@@ -14,7 +14,7 @@ const ColumnTopItems: React.FC<ColumnTopItemsProps & { blockConfigs: BlockConfig
 }) => {
   const getTitle = (id: BlockConfig["id"]) => {
     const block = blockConfigs.find(b => b.id === id);
-    return isSuggestion ? block?.recommendedName || id : block?.name || id;
+    return isSuggestion ? block?.recommendedName || id : block?.title || id;
   };  
 
   return (
