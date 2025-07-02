@@ -48,15 +48,47 @@ function getWidgetConfig(): WidgetConfig {
 }
 
 const config = getWidgetConfig();
-const SELECTOR = config.selector || 'input[type="search"], input[name="q"]';
+const SELECTOR = config.selector || [
+  'input[type="search"]',
+  'input[type="text"]',
+  'input[name="q"]',
+  'input[class*="search"]',
+  'input[placeholder*="buscar"]',
+  'input[placeholder*="search"]',
+  '.widget-search-input'
+].join(', ');
 
-// ✅ 2. Injeta o widget se input for encontrado e ainda não tiver wrapper
+// 🔧 Fallback para criar input se nenhum for encontrado
+function createFallbackInput(): HTMLInputElement {
+  const input = document.createElement("input");
+  input.type = "search";
+  input.placeholder = config.placeholder || "Buscar produtos...";
+  input.className = "widget-search-input";
+  input.style.cssText = `
+    padding: 10px;
+    width: 300px;
+    margin: 20px;
+    display: block;
+  `;
+  document.body.insertBefore(input, document.body.firstChild);
+  return input;
+}
+
+// ✅ 2. Injeta o widget ou cria input se necessário
 function injectIfFound(): boolean {
   const input = document.querySelector<HTMLInputElement>(SELECTOR);
   if (input && !document.getElementById(WRAPPER_ID)) {
     renderWidget(config, input);
     return true;
   }
+
+  // 🔁 Se não encontrar input nenhum, cria um de fallback
+  if (!document.getElementById(WRAPPER_ID)) {
+    const fallbackInput = createFallbackInput();
+    renderWidget(config, fallbackInput);
+    return true;
+  }
+
   return false;
 }
 
