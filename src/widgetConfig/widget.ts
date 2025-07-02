@@ -115,10 +115,20 @@ function observeDOMUntilFound() {
 }
 
 // ✅ 4. Bootstrap do widget: executa imediatamente ou aguarda DOM
+function bootstrap() {
+  let attempts = 0;
+  const interval = setInterval(() => {
+    if (injectIfFound()) {
+      clearInterval(interval);
+    } else if (++attempts > 20) {
+      clearInterval(interval);
+      observeDOMUntilFound(); // fallback
+    }
+  }, 150);
+}
+
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
-    if (!injectIfFound()) observeDOMUntilFound();
-  });
+  document.addEventListener("DOMContentLoaded", bootstrap);
 } else {
-  if (!injectIfFound()) observeDOMUntilFound();
+  bootstrap();
 }
