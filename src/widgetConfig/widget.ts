@@ -77,10 +77,15 @@ function createFallbackInput(): HTMLInputElement {
 // ✅ 2. Injeta o widget ou cria input se necessário
 function injectIfFound(): boolean {
   const input = document.querySelector<HTMLInputElement>(SELECTOR);
-  if (input && !document.getElementById(WRAPPER_ID)) {
-    renderWidget(config, input);
-    return true;
+  if (input) {
+    const wrapper = document.getElementById(WRAPPER_ID);
+    if (!wrapper) {
+      renderWidget(config, input);
+      input.remove();
+      return true;
+    }
   }
+  
 
   // 🔁 Se não encontrar input nenhum, cria um de fallback
   if (!document.getElementById(WRAPPER_ID)) {
