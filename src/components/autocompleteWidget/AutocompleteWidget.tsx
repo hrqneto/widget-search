@@ -81,10 +81,10 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
     setCaretLeftOffset,
     deps: [query, isOpen],
   });
-  useOutsideClickClose("autocomplete-dropdown", () => {
+  useOutsideClickClose(dropdownRef, () => {
     if (!fixarAberto) setIsOpen(false);
   });
-
+  
   return (
     <WidgetConfigContext.Provider value={internalConfig}>
       <div className="relative w-full max-w-full mx-auto mt-4">
