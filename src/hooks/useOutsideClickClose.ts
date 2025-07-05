@@ -1,7 +1,9 @@
 import { useEffect, RefObject } from "react";
 
+type ValidRef = RefObject<HTMLElement> | RefObject<HTMLElement | null>;
+
 export function useOutsideClickClose(
-  refOrClass: string | RefObject<HTMLElement | null>,
+  refOrClass: string | ValidRef,
   close: () => void
 ) {
   useEffect(() => {
@@ -13,7 +15,7 @@ export function useOutsideClickClose(
 
       if (typeof refOrClass === "string") {
         insideDropdown = !!target.closest(`.${refOrClass}`);
-      } else if (refOrClass?.current) {
+      } else if (refOrClass?.current instanceof HTMLElement) {
         insideDropdown = refOrClass.current.contains(target);
       }
 
