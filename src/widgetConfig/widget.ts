@@ -53,9 +53,17 @@ function removeTargetInputIfExists(selector: string, wrapperId: string) {
     const input = document.querySelector<HTMLInputElement>(selector);
     const wrapper = document.getElementById(wrapperId);
 
+    // Evita ocultar o input se não for explicitamente necessário
     if (input && wrapper) {
-      console.log("[BUSCAFLEX] ✅ Input original encontrado e removido.");
-      input.style.display = "none";
+      const shouldReplace = (window as any).BUSCAFLEX_CONFIG?.replaceInput === true;
+
+      if (shouldReplace) {
+        input.style.display = "none";
+        console.log("[BUSCAFLEX] ✅ Input original ocultado (replaceInput:true).");
+      } else {
+        console.log("[BUSCAFLEX] ⚠️ Input mantido visível.");
+      }
+
       clearInterval(interval);
     }
 
