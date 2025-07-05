@@ -55,12 +55,12 @@ function removeTargetInputIfExists(selector: string, wrapperId: string) {
 
     if (input && wrapper) {
       console.log("[BUSCAFLEX] ✅ Input original encontrado e removido.");
-      input.remove();
+      input.style.display = "none";
       clearInterval(interval);
     }
 
     if (!input && wrapper) {
-      clearInterval(interval); // já foi removido
+      clearInterval(interval);
     }
   }, 300);
 }
