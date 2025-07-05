@@ -81,7 +81,8 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
     setCaretLeftOffset,
     deps: [query, isOpen],
   });
-  useOutsideClickClose(dropdownRef, () => {
+  
+  useOutsideClickClose([dropdownRef, inputRef], () => {
     if (!fixarAberto) setIsOpen(false);
   });
   

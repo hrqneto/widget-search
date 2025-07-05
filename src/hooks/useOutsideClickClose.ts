@@ -1,32 +1,24 @@
 import { useEffect, RefObject } from "react";
 
-type ValidRef = RefObject<HTMLElement> | RefObject<HTMLElement | null>;
-
+// Permite um ou mais refs
 export function useOutsideClickClose(
-  refOrClass: string | ValidRef,
+  refs: Array<RefObject<HTMLElement | null>>,
   close: () => void
 ) {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      let insideDropdown = false;
-      let insideInput = false;
+      const clickedInside = refs.some(ref => {
+        return ref.current instanceof HTMLElement && ref.current.contains(target);
+      });
 
-      if (typeof refOrClass === "string") {
-        insideDropdown = !!target.closest(`.${refOrClass}`);
-      } else if (refOrClass?.current instanceof HTMLElement) {
-        insideDropdown = refOrClass.current.contains(target);
-      }
-
-      insideInput = target.closest("input[name='q']") !== null;
-
-      if (!insideDropdown && !insideInput) {
+      if (!clickedInside) {
         close();
       }
     };
 
     document.addEventListener("pointerdown", handleClick);
     return () => document.removeEventListener("pointerdown", handleClick);
-  }, [refOrClass, close]);
+  }, [refs, close]);
 }
