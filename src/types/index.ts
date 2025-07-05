@@ -47,7 +47,6 @@ export interface BlockConfig {
   name?: string;
 }
 
-
 export interface WidgetConfig {
   clientId: string;
   placeholder: string;
