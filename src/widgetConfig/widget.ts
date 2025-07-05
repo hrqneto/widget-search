@@ -47,33 +47,8 @@ function getWidgetConfig(): WidgetConfig {
   };
 }
 
-// ✅ Remove o input original após o widget ser renderizado
-function removeTargetInputIfExists(selector: string, wrapperId: string) {
-  const interval = setInterval(() => {
-    const input = document.querySelector<HTMLInputElement>(selector);
-    const wrapper = document.getElementById(wrapperId);
-
-    // Evita ocultar o input se não for explicitamente necessário
-    if (input && wrapper) {
-      const shouldReplace = (window as any).BUSCAFLEX_CONFIG?.replaceInput === true;
-
-      if (shouldReplace) {
-        input.style.display = "none";
-        console.log("[BUSCAFLEX] ✅ Input original ocultado (replaceInput:true).");
-      } else {
-        console.log("[BUSCAFLEX] ⚠️ Input mantido visível.");
-      }
-
-      clearInterval(interval);
-    }
-
-    if (!input && wrapper) {
-      clearInterval(interval);
-    }
-  }, 300);
-}
-
 const config = getWidgetConfig();
+
 const SELECTOR = config.selector || [
   'input[type="search"]',
   'input[type="text"]',
@@ -101,20 +76,38 @@ function createFallbackInput(): HTMLInputElement {
   return input;
 }
 
-// ✅ Tenta injetar o widget diretamente
+// ✅ Remove input original, se necessário
+function removeTargetInputIfExists(selector: string, wrapperId: string) {
+  const interval = setInterval(() => {
+    const input = document.querySelector<HTMLInputElement>(selector);
+    const wrapper = document.getElementById(wrapperId);
+    const shouldReplace = (window as any).BUSCAFLEX_CONFIG?.replaceInput === true;
+
+    if (input && wrapper) {
+      if (shouldReplace) {
+        input.style.display = "none";
+        console.log("[BUSCAFLEX] ✅ Input original ocultado (replaceInput:true).");
+      } else {
+        console.log("[BUSCAFLEX] ⚠️ Input mantido visível.");
+      }
+      clearInterval(interval);
+    }
+
+    if (!input && wrapper) clearInterval(interval);
+  }, 300);
+}
+
+// ✅ Injeta widget se encontrar input válido
 function injectIfFound(): boolean {
   const input = document.querySelector<HTMLInputElement>(SELECTOR);
-  if (input) {
-    const wrapper = document.getElementById(WRAPPER_ID);
-    if (!wrapper) {
-      console.log("[BUSCAFLEX] 🎯 Input encontrado. Injetando widget...");
-      renderWidget(config, input);
-      removeTargetInputIfExists(SELECTOR, WRAPPER_ID);
-      return true;
-    }
+  if (input && !document.getElementById(WRAPPER_ID)) {
+    console.log("[BUSCAFLEX] 🎯 Input encontrado. Injetando widget...");
+    renderWidget(config, input);
+    removeTargetInputIfExists(SELECTOR, WRAPPER_ID);
+    return true;
   }
 
-  if (!document.getElementById(WRAPPER_ID)) {
+  if (!input && !document.getElementById(WRAPPER_ID)) {
     const fallbackInput = createFallbackInput();
     renderWidget(config, fallbackInput);
     return true;
@@ -123,23 +116,17 @@ function injectIfFound(): boolean {
   return false;
 }
 
-// ✅ Observa o DOM se o input for injetado dinamicamente
-function observeDOMUntilFound() {
-  console.log("[BUSCAFLEX] 👀 Observando DOM para encontrar input...");
+// ✅ Observer sempre ativo
+function observeDOMAlways() {
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of Array.from(mutation.addedNodes)) {
         if (!(node instanceof HTMLElement)) continue;
-
-        const input =
-          node.querySelector?.(SELECTOR) || (node.matches?.(SELECTOR) ? node : null);
-
+        const input = node.querySelector?.(SELECTOR) || (node.matches?.(SELECTOR) ? node : null);
         if (input instanceof HTMLInputElement && !document.getElementById(WRAPPER_ID)) {
           console.log("[BUSCAFLEX] 📦 Input encontrado via observer. Injetando...");
           renderWidget(config, input);
           removeTargetInputIfExists(SELECTOR, WRAPPER_ID);
-          observer.disconnect();
-          return;
         }
       }
     }
@@ -148,28 +135,37 @@ function observeDOMUntilFound() {
   observer.observe(document.body, { childList: true, subtree: true });
 }
 
-// ✅ Inicializa o widget (tentativas + fallback observer)
+// ✅ Monitor de rota SPA (React Router etc.)
+let lastPath = window.location.pathname;
+setInterval(() => {
+  const currentPath = window.location.pathname;
+  if (currentPath !== lastPath) {
+    lastPath = currentPath;
+    console.log("[BUSCAFLEX] 🔄 Rota SPA detectada. Reiniciando bootstrap...");
+    bootstrap();
+  }
+}, 800);
+
+// ✅ Bootstrap
 function bootstrap() {
   console.log("[BUSCAFLEX] 🚀 Iniciando bootstrap do widget...");
-  let attempts = 0;
-  const interval = setInterval(() => {
-    if (injectIfFound()) {
-      clearInterval(interval);
-    } else if (++attempts > 20) {
-      clearInterval(interval);
-      observeDOMUntilFound();
-    }
-  }, 150);
+  if (!injectIfFound()) {
+    console.log("[BUSCAFLEX] ⏳ Input ainda não disponível. Observer ativado.");
+  }
 }
 
-// ✅ Executa automaticamente se o DOM estiver pronto
+// ✅ Autoexecução
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootstrap);
+  document.addEventListener("DOMContentLoaded", () => {
+    bootstrap();
+    observeDOMAlways();
+  });
 } else {
   bootstrap();
+  observeDOMAlways();
 }
 
-// ✅ Exposição global para chamadas manuais
+// ✅ Execução manual
 (window as any).BUSCAFLEX_BOOTSTRAP = () => {
   console.log("[BUSCAFLEX] 🛠️ Executando bootstrap manual via BUSCAFLEX_BOOTSTRAP()");
   bootstrap();
