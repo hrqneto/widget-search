@@ -72,6 +72,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   );
 
   const updateBlock = useBlockUpdater(setBlockConfigs);
+  const inputContainerRef = useRef<HTMLDivElement | null>(null);
 
   useHandleQueryChange(query, fetchInitialSuggestions, debouncedFetchAutocomplete, setIsOpen);
   useDropdownPosition({
@@ -80,6 +81,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
     setDropdownLeftOffset,
     setCaretLeftOffset,
     deps: [query, isOpen],
+    inputContainerRef,
   });
   
   useOutsideClickClose([dropdownRef, inputRef], () => {
@@ -88,7 +90,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   
   return (
     <WidgetConfigContext.Provider value={internalConfig}>
-      <div className="relative w-full max-w-full mx-auto mt-4">
+      <div ref={inputContainerRef}  className="relative w-full max-w-full mx-auto mt-4 flex justify-end">
         <div className={isMobile && isOpen ? "hidden" : "block"}>
           {showConfigUI && (
             <WidgetEditorUI
@@ -110,28 +112,29 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
         </div>
         {isOpen && (
           <div
-            ref={dropdownRef}
-            className={`autocomplete-dropdown ${
-              isMobile
-                ? "fixed inset-0 w-screen h-screen bg-white z-[9999] rounded-none"
-                : "absolute min-h-[500px] mt-3.5 border border-gray-950 rounded-lg z-50 bg-white"
-            }`}
-            style={{
-              overflow: "visible",
-              backgroundColor: internalConfig.colors?.background,
-              width: isMobile ? "100%" : "980px",
-              left: !isMobile ? `${dropdownLeftOffset}px` : undefined,
-            }}
-          >
-            {!isMobile && (
-              <>
-                <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
-                <div
-                  className="w-2 h-2 bg-black absolute -top-1.5 -rotate-45 z-50"
-                  style={{ left: `${caretLeftOffset}px` }}
-                />
-              </>
-            )}
+          ref={dropdownRef}
+          className={`autocomplete-dropdown ${
+            isMobile
+              ? "fixed inset-0 w-screen h-screen bg-white z-[9999] rounded-none"
+              : "absolute min-h-[500px] mt-3.5 border border-gray-950 rounded-lg z-50 bg-white"
+          }`}
+          style={{
+            overflow: "visible",
+            backgroundColor: internalConfig.colors?.background,
+            width: isMobile ? "100%" : "980px",
+            left: !isMobile ? `${dropdownLeftOffset}px` : undefined,
+            top: !isMobile ? '40px' : undefined,
+          }}
+        >
+          {!isMobile && (
+            <>
+              <div className="h-1 bg-black rounded-t-md absolute top-0 left-0 w-full" />
+              <div
+                className="w-2 h-2 bg-black absolute -top-1.5 -rotate-45 z-50"
+                style={{ left: `${caretLeftOffset}px` }}
+              />
+            </>
+          )}
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-red-500"
               onClick={() => setIsOpen(false)}
