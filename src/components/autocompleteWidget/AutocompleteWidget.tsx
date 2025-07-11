@@ -84,7 +84,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
     inputContainerRef,
   });
   
-  useOutsideClickClose([dropdownRef, inputRef], () => {
+  useOutsideClickClose([dropdownRef, inputRef, inputContainerRef], () => {
     if (!fixarAberto) setIsOpen(false);
   });
   
