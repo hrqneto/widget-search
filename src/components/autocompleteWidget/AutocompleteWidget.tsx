@@ -90,7 +90,7 @@ const AutocompleteWidget = ({ config: externalConfig, showConfigUI = false }: Au
   
   return (
     <WidgetConfigContext.Provider value={internalConfig}>
-      <div ref={inputContainerRef}  className="relative w-full max-w-full mx-auto mt-4 flex justify-end">
+      <div ref={inputContainerRef}  className="relative w-full max-w-full mx-auto mt-4">
         <div className={isMobile && isOpen ? "hidden" : "block"}>
           {showConfigUI && (
             <WidgetEditorUI
